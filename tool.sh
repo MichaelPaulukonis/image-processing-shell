@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/usr/bin/env zsh
 
 DIR="$(pwd)"
 # --- Configuration ---
@@ -16,6 +16,7 @@ VERBOSE=false                  # Default to not verbose
 # display usage information
 usage() {
     cat <<_EOF_
+
 Image processing actions I use often
 
 Options:
@@ -48,6 +49,7 @@ sliceGrid() {
     local TARGET_FOLDER="$1"
     local DESTINATION_FOLDER="$2"
     local OUTPUT_PREFIX="$3"
+    prepOut $DESTINATION_FOLDER
 
     convert -crop 256x256 "$ROOT/$TARGET_FOLDER/*.$SUFFIX" "$ROOT/$DESTINATION_FOLDER/$OUTPUT_PREFIX.%03d.$SUFFIX"
 }
@@ -63,23 +65,27 @@ makevideo() {
     local DESTINATION_FOLDER="$4"
     local OUTPUT_NAME="$5"
 
+    prepOut $DESTINATION_FOLDER
+
     local FFMPEG_OPTIONS="-vcodec libx264 -crf 17 -pix_fmt yuv420p"
     local PADDING_FILTER="scale=$RESOLUTION:$RESOLUTION:force_original_aspect_ratio=decrease,pad=$RESOLUTION:$RESOLUTION:(ow-iw)/2:(oh-ih)/2"
 
     local COMMAND="ffmpeg -r $FPS -f image2 -s ${RESOLUTION}x${RESOLUTION} -pattern_type glob -i \"$ROOT/$TARGET_FOLDER/*.png\" -vf \"$PADDING_FILTER\" $FFMPEG_OPTIONS \"$ROOT/$DESTINATION_FOLDER/$OUTPUT_NAME.$FPS.$RESOLUTION.mp4\""
 
-    if $VERBOSE; then
+    if [[ "$VERBOSE" == true ]]; then
         echo "$COMMAND"
     fi
 
-    eval "$COMMAND"
+    # eval "$COMMAND"
 }
 
 # create multiple videos with different FPS values
 makevideos() {
+
     local TARGET_FOLDER="$1"
     local DESTINATION_FOLDER="$2"
     local OUTPUT_NAME="$3"
+    local RESOLUTION="$4"
 
     local FPS_VALUES=(5 10 20 30)
 
@@ -99,6 +105,8 @@ makeMontage() {
     local DESTINATION_FOLDER="$2"
     local OUTPUT_NAME="$3"
 
+    prepOut $DESTINATION_FOLDER
+
     montage -geometry 128x128+0+0 -tile "$GRIDSIZE"x"$GRIDSIZE" -background black "$ROOT/$TARGET_FOLDER/*.$SUFFIX" "$ROOT/$DESTINATION_FOLDER/$OUTPUT_NAME.montage.$GRIDSIZE.%02d.$SUFFIX"
 }
 
@@ -108,6 +116,7 @@ resizeFolder() {
     local DESTINATION_FOLDER="$2"
     local IMAGE_SUFFIX="$3"
     local NEW_RESOLUTION="$4"
+
     prepOut "$DESTINATION_FOLDER"
 
     # `smartresize` was taken from [this article](https://www.smashingmagazine.com/2015/06/efficient-image-resizing-with-imagemagick/)
@@ -124,13 +133,25 @@ resizeFolder() {
 }
 
 debug() {
-    echo TARG: $TARG
-    echo DEST: $DEST
-    echo NAME: $NAME
-    echo ROOT: $ROOT
-    echo PREFIX: $PREFIX
-    echo SUFFIX: $SUFFIX
+    echo "--- debug Output ---"
+    echo "TARGET_FOLDER: $TARGET_FOLDER"
+    echo "DESTINATION_FOLDER: $DESTINATION_FOLDER"
+    echo "OUTPUT_NAME: $OUTPUT_NAME"
+    echo "SUFFIX: $SUFFIX"
+    echo "PREFIX: $PREFIX"
+    echo "GRIDSIZE: $GRIDSIZE"
+    echo "FPS: $FPS"
+    echo "RESOLUTION: $RESOLUTION"
+    echo "VIDEO: $VIDEO"
+    echo "MONTAGE: $MONTAGE"
+    echo "SLICE: $SLICE"
+    echo "RESIZE: $RESIZE"
+    echo "VERBOSE: $VERBOSE"
+    echo "VIDEO: $VIDEO"
+    echo "HELP: $HELP"
+    echo "--- End debug Output ---"
 }
+
 
 # --- Main Script ---
 
@@ -142,72 +163,116 @@ OUTPUT_PREFIX=""
 ## TODO: add a 'dry-run' option
 ## TODO: sanity-check
 
-# Parse command-line arguments using getopts
-while getopts "t:d:n:s:p:g:f:r:vmwoh" opt; do
-    case "$opt" in
-    t) TARGET_FOLDER="$OPTARG" ;;
-    d) DESTINATION_FOLDER="$OPTARG" ;;
-    n) OUTPUT_NAME="$OPTARG" ;;
-    s) SUFFIX="$OPTARG" ;;
-    p) OUTPUT_PREFIX="$OPTARG" ;;
-    g) GRIDSIZE="$OPTARG" ;;
-    f) FPS="$OPTARG" ;;
-    r) RESOLUTION="$OPTARG" ;;
-    v) ACTION="video" ;;
-    m) ACTION="montage" ;;
-    w) ACTION="slice" ;;
-    o) ACTION="wombo" ;;
-    rs) ACTION="resize" ;;
-    h)
-        usage
-        exit 0
-        ;;
-    \?)
-        echo "Invalid option: -$OPTARG" >&2
-        usage
-        exit 1
-        ;;
-    :)
-        echo "Option -$OPTARG requires an argument." >&2
-        usage
-        exit 1
-        ;;
-    esac
-done
+local -a destination_folder
+local -a fps
+local -a gridsize
+local -a help
+local -a montage
+local -a output_name
+local -a prefix
+local -a resize
+local -a resolution
+local -a slice
+local -a suffix
+local -a target_folder
+local -a verbose
+local -a video
 
-# Check for required arguments
-if [ -z "$TARGET_FOLDER" ] || [ -z "$DESTINATION_FOLDER" ] || [ -z "$OUTPUT_NAME" ]; then
-    echo "Error: -t, -d, and -n are required arguments." >&2
+# Parse command-line arguments
+# zparseopts -D -E \
+#     a=flag_a \           # -a can be used without a value
+#     b:=value_b \         # -b MUST have a value (required)
+#     c::=optional_c       # -c can have an optional value
+
+# Initialize zparseopts
+zparseopts -D -E \
+    d:=destination_folder -destination:=destination_folder \
+    f:=fps -fps:=fps \
+    g:=gridsize -gridsize:=gridsize \
+    h=help -help=help \
+    m=montage -montage=montage \
+    n:=output_name -name:=output_name \
+    p:=prefix -prefix:=prefix \
+    r:=resolution -resolution:=resolution \
+    rs=resize -resize:=resize \
+    s:=suffix -suffix:=suffix \
+    t:=target_folder -target:=target_folder \
+    {v,-video}=video \
+    {verbose,-verbose}=verbose \
+    w=slice -slice=slice \
+
+if [[ -n "$verbose" ]]; then
+VERBOSE=true
+    echo "\nVerbose output enabled\n"
+    # --- Debugging zparseopts Output ---
+    echo "\n--- zparseopts output ---"
+    echo "destination_folder: $destination_folder"
+    echo "fps: $fps"
+    echo "gridsize: $gridsize"
+    echo "help: $help"
+    echo "montage: $montage"
+    echo "output_name: $output_name"
+    echo "prefix: $prefix"
+    echo "resize: $resize"
+    echo "resolution: $resolution"
+    echo "slice: $slice"
+    echo "suffix: $suffix"
+    echo "target_folder: $target_folder"
+    echo "verbose: $verbose"
+    echo "video: $video"
+    echo "--- end zparseopts output ---"
+fi
+
+# Check for help flag first
+if [[ -n "$help" ]]; then
+    echo "\nhelp selected"
+    usage
+    exit 0
+fi
+
+# --- Assign Params ---
+TARGET_FOLDER="${target_folder[2]}"
+DESTINATION_FOLDER="${destination_folder[2]}"
+FPS="${fps[2]}"
+GRIDSIZE="${gridsize[2]}"
+HELP="${help}"
+MONTAGE="${montage}"
+OUTPUT_NAME="${output_name[2]}"
+PREFIX="${prefix[2]}"
+RESIZE="${resize}"
+SLICE="${slice}"
+SUFFIX="${suffix[2]}"
+VIDEO="${video}"
+
+
+if [[ ! -z "$resolution" ]] || [[ ${#resolution[@]} -gt 0 ]]; then
+    RESOLUTION="${resolution[2]:-$RESOLUTION}"
+fi
+
+# # Check for required arguments
+if [[ -z "$TARGET_FOLDER" ]] || [[ -z "$DESTINATION_FOLDER" ]] || [[ -z "$OUTPUT_NAME" ]]; then
+    echo "Error: TARGET, DESTINATION and NAME are required arguments." >&2
     usage
     exit 1
 fi
 
-prepOut $DESTINATION_FOLDER
 
-# Perform actions based on captured parameters
-case "$ACTION" in
-video)
-    makevideos "$TARGET_FOLDER" "$DESTINATION_FOLDER" "$OUTPUT_NAME"
-    ;;
-montage)
+if [[ -n "$VIDEO" ]]; then
+    makevideos "$TARGET_FOLDER" "$DESTINATION_FOLDER" "$OUTPUT_NAME" "$RESOLUTION"
+
+elif [[ -n "$MONTAGE" ]]; then
     makeMontage "$TARGET_FOLDER" "$DESTINATION_FOLDER" "$OUTPUT_NAME"
-    ;;
-slice)
-    sliceGrid "$TARGET_FOLDER" "$DESTINATION_FOLDER" "$OUTPUT_PREFIX"
-    ;;
-resize)
+
+elif [[ -n "$SLICE" ]]; then
+    sliceGrid "$TARGET_FOLDER" "$DESTINATION_FOLDER" "$PREFIX"
+
+elif [[ -n "$RESIZE" ]]; then
     resizeFolder "$TARGET_FOLDER" "$DESTINATION_FOLDER" "$SUFFIX" "$RESOLUTION"
-    ;;
-"")
+    ;
+else
     echo "No valid action specified"
     usage
     exit 1
-    ;;
-*)
-    echo "Invalid action: $ACTION"
-    usage
-    exit 1
-    ;;
-esac
+fi
 
 echo "Completed processing for target: $ROOT/$TARGET_FOLDER"
