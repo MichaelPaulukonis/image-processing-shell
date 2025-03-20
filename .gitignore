@@ -1,1 +1,6 @@
 notes.md
+
+venv/
+samples/
+.DS_Store
+.vscode
