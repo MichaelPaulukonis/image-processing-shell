@@ -32,6 +32,7 @@ Options:
   -m | --montage             Create a montage.
   -w | --slice               Slice images into a grid.
   -rs | --resize             Resize images in a folder.
+  --transparent              Convert B&W images to B&Transparent (PNG only).
   --verbose                  Enable verbose output.
   -h | --help                Display this help message.
 
@@ -132,6 +133,83 @@ resizeFolder() {
     done
 }
 
+# convert black-and-white images to black-and-transparent
+makeTransparent() {
+    local TARGET_FOLDER="$1"
+    local DESTINATION_FOLDER="$2"
+    local OUTPUT_NAME="$3"
+
+    prepOut "$DESTINATION_FOLDER"
+
+    local processed_count=0
+    local error_count=0
+    local source_path="$ROOT/$TARGET_FOLDER"
+    local dest_path="$ROOT/$DESTINATION_FOLDER"
+
+    if [[ "$VERBOSE" == true ]]; then
+        echo "Processing PNG files in: $source_path"
+        echo "Output directory: $dest_path"
+        echo "Using threshold + low fuzz transparent white method"
+    fi
+
+    # Check if source directory exists
+    if [[ ! -d "$source_path" ]]; then
+        echo "Error: Source directory does not exist: $source_path" >&2
+        exit 1
+    fi
+
+    # Process each PNG file
+    # Disable nomatch to handle cases where no PNG files exist
+    setopt NULL_GLOB
+    local files=("$source_path"/*.png)
+    unsetopt NULL_GLOB
+    
+    if [[ ${#files[@]} -eq 0 ]] || [[ ! -e "${files[1]}" ]]; then
+        echo "No PNG files found in: $source_path"
+        return 0
+    fi
+
+    for input_file in "${files[@]}"; do
+
+        local filename=$(basename "$input_file")
+        local name_without_ext="${filename%.*}"
+        local output_file="$dest_path/${name_without_ext}_transparent.png"
+
+        if [[ "$VERBOSE" == true ]]; then
+            echo "Processing: $filename -> ${name_without_ext}_transparent.png"
+        fi
+
+        # Two-step: first threshold to eliminate grays, then transparent white
+        if magick "$input_file" -threshold 50% -fuzz 5% -transparent white "$output_file" 2>/dev/null; then
+            # Verify the output file has content (not completely transparent)
+            if [[ "$VERBOSE" == true ]]; then
+                local file_size=$(stat -f%z "$output_file" 2>/dev/null || echo "0")
+                echo "    Output file size: $file_size bytes"
+                if [[ $file_size -lt 1000 ]]; then
+                    echo "    Warning: Output file is very small, might be completely transparent"
+                fi
+            fi
+        # if convert "$input_file" -fuzz 40% -alpha set -background none -fill none +opaque black "$output_file" 2>/dev/null; then
+            ((processed_count++))
+            if [[ "$VERBOSE" == true ]]; then
+                echo "  ✓ Success"
+            fi
+        else
+            ((error_count++))
+            echo "  ✗ Failed to process: $filename" >&2
+            if [[ "$VERBOSE" == true ]]; then
+                echo "  Continuing with next file..."
+            fi
+        fi
+    done
+
+    echo "Transparency conversion completed:"
+    echo "  Processed: $processed_count files"
+    if [[ $error_count -gt 0 ]]; then
+        echo "  Errors: $error_count files"
+    fi
+}
+
 debug() {
     echo "--- debug Output ---"
     echo "TARGET_FOLDER: $TARGET_FOLDER"
@@ -146,6 +224,7 @@ debug() {
     echo "MONTAGE: $MONTAGE"
     echo "SLICE: $SLICE"
     echo "RESIZE: $RESIZE"
+    echo "TRANSPARENT: $TRANSPARENT"
     echo "VERBOSE: $VERBOSE"
     echo "VIDEO: $VIDEO"
     echo "HELP: $HELP"
@@ -175,6 +254,7 @@ local -a resolution
 local -a slice
 local -a suffix
 local -a target_folder
+local -a transparent
 local -a verbose
 local -a video
 
@@ -183,6 +263,7 @@ local -a video
 #     a=flag_a \           # -a can be used without a value
 #     b:=value_b \         # -b MUST have a value (required)
 #     c::=optional_c       # -c can have an optional value
+# some nice examples @ https://www.reddit.com/r/zsh/comments/s09vot/using_zparseopts/
 
 # Initialize zparseopts
 zparseopts -D -E \
@@ -197,6 +278,7 @@ zparseopts -D -E \
     rs=resize -resize:=resize \
     s:=suffix -suffix:=suffix \
     t:=target_folder -target:=target_folder \
+    {transparent,-transparent}=transparent \
     {v,-video}=video \
     {verbose,-verbose}=verbose \
     w=slice -slice=slice \
@@ -218,6 +300,7 @@ VERBOSE=true
     echo "slice: $slice"
     echo "suffix: $suffix"
     echo "target_folder: $target_folder"
+    echo "transparent: $transparent"
     echo "verbose: $verbose"
     echo "video: $video"
     echo "--- end zparseopts output ---"
@@ -242,6 +325,7 @@ PREFIX="${prefix[2]}"
 RESIZE="${resize}"
 SLICE="${slice}"
 SUFFIX="${suffix[2]}"
+TRANSPARENT="${transparent}"
 VIDEO="${video}"
 
 
@@ -268,6 +352,9 @@ elif [[ -n "$SLICE" ]]; then
 
 elif [[ -n "$RESIZE" ]]; then
     resizeFolder "$TARGET_FOLDER" "$DESTINATION_FOLDER" "$SUFFIX" "$RESOLUTION"
+
+elif [[ -n "$TRANSPARENT" ]]; then
+    makeTransparent "$TARGET_FOLDER" "$DESTINATION_FOLDER" "$OUTPUT_NAME"
     ;
 else
     echo "No valid action specified"
