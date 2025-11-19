@@ -5,6 +5,13 @@ samples/
 .DS_Store
 .vscode
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
 # Logs
 logs
 *.log

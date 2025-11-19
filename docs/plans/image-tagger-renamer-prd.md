@@ -1,9 +1,26 @@
 # Product Requirements Document: Image Tagger & Renamer
 
-**Version:** 1.0  
-**Date:** November 18, 2025  
-**Status:** Draft  
+**Version:** 1.1  
+**Date:** November 19, 2025  
+**Status:** Implementation Ready  
 **Author:** Michael Paulukonis
+
+---
+
+## Change Log
+
+**v1.1 (2025-11-19):**
+- Added UI mockup reference and implementation clarifications
+- Clarified folder change behavior (initial selection only, warning for Day 2)
+- Confirmed scroll-only navigation (no pagination for MVP)
+- Specified dark mode as default with light/dark switcher for Day 2
+- Documented error display approach (modals to be determined)
+- Added Select All/Clear Selection to critical features
+- Clarified filename format and tag sorting behavior
+- Updated accessibility requirements
+
+**v1.0 (2025-11-18):**
+- Initial PRD based on discovery interview
 
 ---
 
@@ -63,6 +80,8 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
 - **Phase 2**: Drag-and-drop to folders for automatic organization
 - **Phase 3**: Basic image editing (crop and rotate)
 - **Day 2 Features**: 
+  - Folder change warning popup (confirm/cancel when changing directories mid-session)
+  - Light/dark theme switcher (unless trivial to add in MVP)
   - Filter by filename/tags to create copies
   - Export JSON for "virtual" folder organization
   - Enhanced search and filtering capabilities
@@ -123,6 +142,10 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
   - Loads all supported image formats (JPG, PNG, JP2) from selected directory
   - Displays loading indicator while scanning directory
   - Shows error message if directory inaccessible or contains no images
+- **Implementation Notes**:
+  - Initial folder selection only for MVP
+  - Changing folders mid-session clears all selections (no warning for MVP)
+  - Folder change warning popup with confirm/cancel deferred to Day 2
 
 #### FR-2: Thumbnail Grid Display
 - **Description**: Display all images as thumbnails in a scrollable grid layout
@@ -132,15 +155,23 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
   - Smooth scrolling through large collections (500+ images)
   - Thumbnail generation cached for performance
   - Original filename displayed below each thumbnail
+- **Implementation Notes**:
+  - Scroll-only navigation (no pagination for MVP)
+  - Loading indicator shown during initial thumbnail generation
+  - No visual feedback needed for caching status
 
 #### FR-3: Image Selection
 - **Description**: Support both single and multiple image selection
 - **Acceptance Criteria**:
   - Single-selection mode is default (clicking an image selects only that one)
-  - Multiple-selection mode enabled via toggle
+  - Multiple-selection mode enabled via toggle in header
   - Selected images show checkmark overlay on thumbnail
-  - Selection count displayed prominently
-  - "Select All" and "Clear Selection" options available
+  - Selection count displayed prominently (e.g., "Selected: 12 / 256")
+  - "Select All" and "Clear Selection" buttons available in header
+  - Selection state cleared when changing folders
+- **Implementation Notes**:
+  - Visual selection feedback: checkmark, border highlight, and semi-transparent overlay
+  - Multi-select toggle must be clearly visible and labeled
 
 #### FR-4: Tag Management System
 - **Description**: Persistent tag library that users can add to and reuse across sessions
@@ -171,12 +202,18 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
 #### FR-7: Batch Rename Execution
 - **Description**: Rename selected images using prefix + tags + suffix + numbering
 - **Acceptance Criteria**:
-  - Tags sorted alphabetically in filename
+  - Tags sorted alphabetically in filename (NOT UI display order)
   - Format: `[prefix]_[tag1]_[tag2]_[tagN]_[suffix]_[number].ext`
   - Example: `monochrome_comics_food_nancy_sluggo_000.png`
+  - Original filename is NOT included in output (completely replaced)
   - Rename happens immediately when user clicks "Rename" button
   - Original file extension preserved
   - Success confirmation shown after rename completes
+  - Progress indicator for operations >1 second
+- **Implementation Notes**:
+  - Preview must accurately show final filename with alphabetically sorted tags
+  - Button shows count: "Rename 12 Selected Images"
+  - Post-rename behavior to be designed (success message, toast notification, or status area)
 
 #### FR-8: Error Handling and Logging
 - **Description**: Detailed logging and error reporting for troubleshooting
@@ -185,6 +222,10 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
   - Errors displayed to user with clear messages (file locked, permission denied, disk full, etc.)
   - Log file stored in app configuration directory
   - Console output available for command-line troubleshooting
+- **Implementation Notes**:
+  - Error display mechanism to be determined (modals, inline error area, or toast notifications)
+  - Must not block workflow - user should be able to continue after error
+  - Errors should be specific and actionable (not generic "An error occurred")
 
 ### 5.2 Advanced Features (Future Releases)
 
@@ -341,13 +382,19 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
 
 ### 7.2 User Interface Layout
 
+**UI Mockup Reference:**
+- HTML/CSS mockup located at: `docs/inspo/image_tagger_&_renamer_dashboard/code.html`
+- Screenshot available at: `docs/inspo/image_tagger_&_renamer_dashboard/screen.png`
+- **Implementation approach**: Use mockup for visual design and layout, implement PRD specifications for logic and behavior
+
 **Main Screen Components:**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Image Tagger & Renamer                    [Directory: ...]  │
 ├─────────────────────────────────────────────────────────────┤
-│ [Change Folder]  [Multi-Select: OFF]  [Selected: 0/245]    │
+│ [Change Folder]  [Multi-Select: OFF]  [Select All] [Clear] │
+│                                          [Selected: 0/245]   │
 ├─────────────────────────────────────────────────────────────┤
 │                                                               │
 │  ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐  │
@@ -366,9 +413,16 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
 │                                                               │
 │ Preview: prefix_comics_food_nancy_sluggo_000.png            │
 │                                                               │
-│                    [Rename Selected Images]                  │
+│                    [Rename 12 Selected Images]               │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Design Notes:**
+- Dark mode as default theme
+- Light/dark theme switcher deferred to Day 2 (unless trivial to implement)
+- Mockup uses Tailwind CSS with Space Grotesk font
+- Primary color: #0db9f2 (cyan/blue)
+- Grid uses auto-fill layout with 150px minimum thumbnail size
 
 ### 7.3 Interaction Patterns
 
@@ -387,19 +441,26 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
 
 **Add New Tag Flow:**
 1. Click "+ Add New Tag" button
-2. Inline text input appears
+2. Inline text input appears (in-place, not a modal)
 3. Type tag name and press Enter (or click Save)
 4. New tag added to list immediately and saved to tags.json
+5. Input field disappears after save
+6. New tag appears at end of tag list and is immediately usable
+
+**Note:** Mockup shows "+ Add New Tag" button but not the inline input state - this must be implemented
 
 **Rename Flow:**
 1. Select image(s) via thumbnails
 2. Set prefix/suffix (optional)
 3. Select tags by clicking pills
-4. Preview shows resulting filename
-5. Click "Rename Selected Images"
-6. Brief progress indicator (if multiple files)
-7. Success message confirms completion
+4. Preview dynamically updates to show resulting filename with alphabetically sorted tags
+5. Click "Rename X Selected Images" (button shows count)
+6. Brief progress indicator (if multiple files or operation >1 second)
+7. Success message confirms completion (mechanism TBD: toast, status area, or modal)
 8. Thumbnails refresh to show new names
+9. Selection state preserved or cleared (TBD based on UX testing)
+
+**Note:** Mockup preview shows incorrect format - implementation must follow PRD specification with alphabetically sorted tags and no original filename
 
 ### 7.4 User Experience Goals
 
@@ -424,10 +485,19 @@ A lightweight, fast, and intuitive tool that becomes the default solution for or
 - Keyboard-accessible (tab navigation through UI)
 - Sufficient color contrast for readability
 - Clear text labels for all controls
+- Proper keyboard navigation for image selection (not relying solely on hidden checkboxes)
+- Focus indicators visible on all interactive elements
+- Semantic HTML structure
+
+**Implementation Notes:**
+- Mockup uses `opacity-0` checkboxes which may have accessibility issues
+- Must ensure keyboard users can navigate and select images without mouse
+- Consider arrow key navigation for image grid
+- Tag pills must be keyboard accessible (Space/Enter to toggle)
 
 **Future Enhancements:**
-- Screen reader support
-- Keyboard shortcuts for power users
+- Screen reader support with ARIA labels
+- Keyboard shortcuts for power users (e.g., Ctrl+A for Select All)
 - Customizable thumbnail size for visibility
 
 ---
@@ -834,11 +904,44 @@ GET  /api/thumbnail/<path>      # Serve cached thumbnail
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 1.1 | 2025-11-19 | Michael Paulukonis | Added UI mockup clarifications and implementation notes |
 | 1.0 | 2025-11-18 | Michael Paulukonis | Initial PRD based on discovery interview |
 
 **Next Review Date:** Upon MVP completion
 
-**Approval Status:** Draft - Pending MVP development
+**Approval Status:** Implementation Ready - UI mockup evaluated and clarifications documented
+
+---
+
+## Appendix D: UI Mockup Evaluation Summary
+
+**Mockup Location:** `docs/inspo/image_tagger_&_renamer_dashboard/`
+
+### Key Agreements
+- Grid layout with 150x150px thumbnails ✓
+- Multi-select toggle in header ✓
+- Tag pills/chips UI pattern ✓
+- Prefix/suffix input fields ✓
+- Preview display ✓
+- Dark mode aesthetic ✓
+
+### Critical Corrections Needed
+1. **Filename preview format** - Mockup shows `genart_IMG_001_comics_abstract.jpg` but should be `genart_abstract_comics_000.jpg` (no original filename, alphabetically sorted tags, always include numbering)
+2. **Tag sorting** - Must sort alphabetically in filename, not UI display order
+3. **Missing features** - Select All/Clear Selection buttons must be added to header
+
+### Implementation Priorities
+1. Follow PRD for all naming logic and file operations
+2. Use mockup for visual design, layout, and styling
+3. Add missing UI elements (Select All, Clear, proper Add Tag flow)
+4. Fix accessibility issues with hidden checkboxes
+5. Design post-rename feedback mechanism (success message/toast)
+
+### Deferred to Day 2
+- Folder change warning popup
+- Light/dark theme switcher (unless easy to add)
+- Thumbnail cache status indicators
+- Format preservation visual feedback
 
 ---
 
