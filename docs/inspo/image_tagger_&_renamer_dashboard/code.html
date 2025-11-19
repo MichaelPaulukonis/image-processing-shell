@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Image Batch Renamer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0db9f2",
+              "background-light": "#f5f8f8",
+              "background-dark": "#101e22",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        .group:has(input:checked) .selection-indicator {
+            opacity: 1;
+            border-color: #0db9f2;
+        }
+        .group:has(input:checked) .image-overlay {
+            opacity: 1;
+        }
+        .group:has(input:checked) .check-icon {
+            transform: scale(1);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 sm:px-8 md:px-16 lg:px-24 xl:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-5xl flex-1">
+<!-- Header Bar -->
+<header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 rounded bg-primary/20 hover:bg-primary/30 text-primary font-medium transition-colors">
+<span class="material-symbols-outlined text-xl">folder_open</span>
+                                Change Folder
+                            </button>
+<div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+<p class="text-sm font-medium">Multi-Select</p>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<p class="text-gray-700 dark:text-gray-300 text-base font-normal leading-normal">Selected: 12 / 256</p>
+</header>
+<!-- Image Display Area -->
+<main class="flex-grow">
+<div class="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-4 p-4">
+<!-- Image Items with Selection State -->
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img1" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Abstract vibrant geometric shapes in purple and blue" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBlYWyWYWmGZm9Hbvckx1hI4qCcJW32cWLPzzljv9Ey2TJC8X35B7tdH3uo8x5_nmVALCzFcZStOGp-p0YTOWnRW8qAq8ecAq40ilC8nBRukKXAMqcDxDes4oQaBzIA5YWmCf9KPBnFrkV7poHVt63dEqSPidpNAqWhSZNzU_UgaCRX4P-mUFuTGj8xSuAhgAGaFDsEKhCYHvnIHoJv_LdI-dyCpT-NcGPc07JMkhP8tv1hBpyORMqJITleXphrZxWw7PNboGXoajM6");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_001.jpg</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img2" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Flowing abstract colors in pink, yellow and blue" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBFGiLFCiQsxAtbmnkXuscWvnjCS_5I7gdpIHqCD-GePVtE2pZ-ebj6rGvyDYbrCJCAQkJV0WHoO4Ulyl9HqJLvXYdPSYNBpu6jcZcSCG5qDzr9PAr2Gr6Du38FVRM4xA1MgCOgHQfXGaZDoZEQReDnPCxhc85pUttZPnV32DsmOlutd-AOq3a2LtS4PchoStedDWe5IphdK21AhilAR4fqE1ze_4TSq4zTzEwgOy3aP78spXYPswZdBk3Gz18bdyDZzGJWBehd9ZGg");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_002.jpg</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img3" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Smooth wave-like gradient in pastel blue and pink" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBq-8itLx91mZ70IQvSHlcFUKp8DlCxcOjgG-Vrc88L79Xcy7r1LECsX0nTlf3UcJagObUaE4Gcp5g25FlaFye5iZyKsWdO00e_1ozZXdvGah5wzjAoXqnX47HnWKZsqNaprAbhFfl36q9XXRsbKbqfQCh2rPJtHX-R54GTpeg2JYGxLS0E5DbJGCJZeKlJEni1ynHlWOAseKYykSkOGve5XwsWP07RmDyhu5CplZFi8IslXNhlcAezd2cOac8CL6pWLGEDIMwoLjyH");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_003.png</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img4" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="3D render of metallic spheres and cubes in purple" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRy-FDlhQn2_diwtbvfJi2KIjb6IEruhSx3MpJsxu0TIWZa9btv6-MfqsDqto35HCi7rv9oyBfcJQINtgDhrUljiopkhGS03HR00MOg7xmw-0hLVuVbL6AgPUBCFg_7kjbarYsWv1zeHAEmJqDxHBq0KfnIt3PRB5nzVhXg_Ja1IfTwaO6OalOeWEQPIIT-w8lTrKsl3qtrrXK2ostkhEFFMYOE9K32cR5Y5cP3C0D9R0b6-kqKtxz9ITsf85FBhlu3PfOLkElw5f8");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_004.jpg</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img5" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Soft gradient of blue, yellow, and pink colors" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCHsVVkQxJyVLpws8cW73Xjsw3pTKCOGDDRzW7UiL5Ny7SMR28jv_aVxWHfPNn-zLAxg-jv4IArBn_yRs7dclnMhHCLDitHufutVhrKrXmlavKXawYrC8wb54g0QYcox-iiUCPY0WORMQgySzp62jB4lR2RVkkCdBl8d8E9TBd-PbzRz8sO2MQsIcd4mJP97t1eCt_HqSs-Gooz_G3SdWsYT7nncT4QsjUcs_-c8g9AqeHbSL-zOqXvO8d237_8u6aKSqfB3kAQUj3n");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_005.jpg</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img6" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Abstract white and grey 3D crystal shapes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAbY89j7F1vb4Mr3oVj7T6ALzSgpfqs_Vr0Nsw6bkRxmNf4q4uADpIPGqNIN1FQ7CmQG6W9iB4TxwjlFzpKV1l4rdq-0k6OU2wcBzi-LYhFyfl8ZYlqcIk7X-UwYziVpPLeWyyyghZuzDXhu9Iqh6uevoK9WU6QzPUwcT4cnIukq63BURAs3mv2GkeSRNFcem37ptfqU_6vN1BTShajsklA0Z2N9aL5U0IML2ZKzGPGjAtTX31tIm4PH3EOb_LzRgBIe5LacLjK8E6r");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_006.jpg</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img7" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Dark abstract background with blue neon lines" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC4Y-kjvaSgBranEaOk3RLBtsTwu9qiq0ThhojW70nhrTmPiUxIosAirGKwT2X5ZCPZuXH57uFLvu_qI1WB0Wr8PrlNWM1xXg8n-_C0LljFJlCobPpxkY65zS0FWnoTmBm32EOFD-tlW3ImQ81sFC9QpTXoZlgvQZ2RnKuHsvaRZpC-ff1-kBRreSQv3MzUyIDAVAlgCPseZv5gfVyahLjWf1XgAfLopqLCQmUdtUxlvcuL2EsT8eC60AWQDoFUrrslQkR-cZTXYhIQ");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_007.gif</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img8" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="White and grey marble texture background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdluJRJpvBeCuI0DhHfHKV0HJQuYTL9-dyRoGOa7OkXCRzLPLPaxBW3qPdlcxEbWIkmQEKgfRfbtAInuOOGi7hWR1GkZ40vo880YYzBCjkN-I-sxUBvrvxgmHbu8OWmzvvoxbhpAdJT89vQInw40m0CbynVboWFZicS3c7KrKtVuQotRbJ21VOFVlf-8EkGludi6M_T1AKGsUQq7eJMW5v4iJUeaLnpw8xBE_UGvlaMMUZCk6Mi-52haL9KEOmOftfExM-572nhXyv");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_008.jpg</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img9" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Abstract green and black fluid art painting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCLl2tVmgt7HMaibwfz4SScxqMv6H6sDRSYlXPwUhvXIQS3dll1BaYXTDzD5l3CQCJfI-Rg2CoIdq4iCjpVO9rm4FWIVsKHor6B447NwPruPV2AsTWc4u9JgvC35aIirXF4UeZe4SDN2teqAqPWjsIV-IyMy4eNb5nawIzw-ZtiJPXbGGpsx_NNxonqm5XfC2hWnpEAJE6Q2M83OVfZBPeVBf3-yEKDp89xwfdB2Omj7QoxRredULRkooCCJC8TNk50Q89AxHScO8tZ");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_009.jpg</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img10" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Colorful abstract geometric background with circles and lines" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB8XguX2RYuSMeHYzb7qTqYboM4quFXhrkx62-sULEGvxN2b4pDd44NrdWbyqdktWwRlzcgb1d-IFrzn0DT7meIzc7o19gkaR3j4CcRureukpIBXHt8yhiPg8Gr12i0LIG6YvE3bFK_3uIfOqwpm3fY_gIwjlVYDbpSD0MlO8ULjuC-iJkUMo8WQby3xAErNvee2FvAG6mQ-k-FiZbAEC8JSzv8VyOo4T21pMlnSzIxhsM1-XjAwxq0mbxCQv3-U3Hc-dK3LR6OvlJw");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_010.jpg</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img11" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Abstract oil painting with pastel color strokes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCZHdNVcVVUUONalRXgymN_YpcahZiXgmDJNZ5x10EYV2f5BU6j9K3XQuwUG8WVrJBXRgx_A5a15RYqD2wAvnNDQe_Sj95SFZ2VgdSWO5x0rludNiEbIkE8qUrvvikddhKVP-n4ElmHH9m4uQBGiqDJmVTh4X4zWgo-NW_ebmuL4pJC94DSGj-b2wom5T5rSJBgff0KIn9cTEEA9i8slGMtQdypScKlxbahXSVaWBsCM-8eL7hJwAt6n2zWwXBLJBE2-q6Tdo2vPOC0");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_011.png</p>
+</div>
+<div class="group relative flex flex-col gap-2">
+<input checked="" class="absolute top-2 left-2 z-20 h-5 w-5 opacity-0 cursor-pointer" id="img12" type="checkbox"/>
+<div class="relative w-full aspect-square">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover rounded" data-alt="Minimalist abstract background with blue and orange shapes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB3O0Kwgbex_Ar6-vBzTDstujhZFZujROo7L9N9nS1KzCBm9s_PM9uw1x2GKEHZUAvlxPzcqiniY_LO1KcyEIBMyvHABdxoN_p99fYTnQ_pvPuDsqh0PVYyIBEyoXHLo49QrASiHL3YHFc9uhQExa2h8gwGWpHSB4Rph1w1y_NF83R10d1yLbtU4XAjsg_3FmV4crSDK5dyEz6HPtNj7UhK22NHivcgRmyE-VtNZ3B1xs0c-QzzzwQLfoj_-eEtMTpipfE1Dp9fEGkt");'></div>
+<div class="image-overlay absolute inset-0 bg-black/50 rounded transition-opacity opacity-0"></div>
+<div class="selection-indicator pointer-events-none absolute inset-0 rounded border-2 border-transparent transition-all"></div>
+<div class="check-icon pointer-events-none absolute top-2 left-2 flex h-5 w-5 items-center justify-center rounded-sm bg-primary text-white opacity-0 scale-50 transition-all duration-200">
+<span class="material-symbols-outlined text-base">check</span>
+</div>
+</div>
+<p class="text-xs text-gray-600 dark:text-gray-400 font-medium leading-normal truncate">IMG_012.jpg</p>
+</div>
+</div>
+</main>
+<!-- Action Panel -->
+<footer class="bg-white/50 dark:bg-black/20 backdrop-blur-sm sticky bottom-0 border-t border-gray-200 dark:border-gray-800 p-4">
+<div class="flex flex-col gap-4">
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] px-4">Batch Processing</h3>
+<div class="flex flex-col md:flex-row items-end gap-4 px-4">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-base font-medium leading-normal pb-2">Prefix</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-white dark:bg-background-dark h-12 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-3 text-base font-normal leading-normal" placeholder="Add a prefix..." value="genart_"/>
+</label>
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-base font-medium leading-normal pb-2">Suffix</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-white dark:bg-background-dark h-12 placeholder:text-gray-400 dark:placeholder:text-gray-500 p-3 text-base font-normal leading-normal" placeholder="Add a suffix..." value=""/>
+</label>
+</div>
+<div class="px-4 py-2">
+<p class="text-base font-medium leading-normal pb-2">Tags</p>
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium transition-colors hover:bg-primary/30">comics</button>
+<button class="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-colors hover:bg-gray-300 dark:hover:bg-gray-600">nancy</button>
+<button class="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-colors hover:bg-gray-300 dark:hover:bg-gray-600">sluggo</button>
+<button class="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium transition-colors hover:bg-primary/30">abstract</button>
+<button class="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium transition-colors hover:bg-gray-300 dark:hover:bg-gray-600">generative</button>
+<button class="flex items-center gap-1 px-3 py-1 rounded-full border border-dashed border-gray-400 dark:border-gray-600 text-gray-500 dark:text-gray-400 text-sm font-medium transition-colors hover:bg-gray-200 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined text-base">add</span>
+                                        Add New Tag
+                                    </button>
+</div>
+</div>
+<div class="px-4 py-2">
+<p class="text-base font-medium leading-normal pb-2">Preview</p>
+<div class="w-full rounded bg-gray-100 dark:bg-gray-900/50 p-3">
+<p class="text-sm font-mono text-gray-500 dark:text-gray-400 break-all">genart_IMG_001_comics_abstract.jpg</p>
+</div>
+</div>
+<div class="px-4 pt-2">
+<button class="w-full text-center rounded bg-primary py-3 px-6 text-base font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed">Rename 12 Selected Images</button>
+</div>
+</div>
+</footer>
+</div>
+</div>
+</div>
+</div>
+</body></html>
