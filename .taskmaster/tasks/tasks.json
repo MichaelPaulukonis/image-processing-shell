@@ -17,7 +17,7 @@
         "id": "2",
         "title": "File System Operations and Image Processing",
         "description": "Implement core file system operations including directory scanning, image detection, and file renaming functionality.",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "1"
         ],
@@ -82,14 +82,14 @@
               3,
               4
             ],
-            "details": "Standardize exception handling patterns across all functions. Implement specific handlers for PermissionError, FileNotFoundError, and OSError. Add user-friendly error messages with context. Implement retry logic for transient errors where appropriate.",
-            "status": "in-progress",
+            "details": "Standardize exception handling patterns across all functions. Implement specific handlers for PermissionError, FileNotFoundError, and OSError. Add user-friendly error messages with context. Implement retry logic for transient errors where appropriate.\n<info added on 2025-11-20T19:44:26.511Z>\nAdded dedicated validation and recovery utilities:\n\n1. validate_rename_operation(): verifies source existence, supported formats, destination writability, and filename safety before any rename operation. Returns structured results with non-fatal warnings for UX messaging.\n\n2. get_error_recovery_suggestions(): maps common failure types (permission errors, missing files, bad paths, unsupported formats, duplicates) to actionable recovery steps and lists supported extensions.\n\n3. Integration with existing functions: scan_directory(), rename_file(), batch_rename_files(), and preview helpers now use these validation utilities to preflight and remediate issues before batch operations run.\n\n4. Comprehensive logging: All validation and error-handling logic emits INFO/ERROR logs to ~/.image-tagger-renamer/app.log for diagnostics and troubleshooting.\n\nManual validation testing covered successful operations, missing files, unsupported extensions, special-character handling, error suggestion outputs for various failure scenarios, and graceful error return with recovery suggestions.\n</info added on 2025-11-20T19:44:26.511Z>",
+            "status": "done",
             "testStrategy": "Test all operations with simulated permission errors, disk full scenarios, and invalid inputs. Verify consistent error messages and graceful degradation behavior",
             "parentId": "undefined",
-            "updatedAt": "2025-11-20T18:54:49.860Z"
+            "updatedAt": "2025-11-20T19:44:36.513Z"
           }
         ],
-        "updatedAt": "2025-11-20T18:54:49.860Z"
+        "updatedAt": "2025-11-20T19:44:36.513Z"
       },
       {
         "id": "3",
@@ -109,14 +109,69 @@
         "id": "4",
         "title": "Tag Management System",
         "description": "Implement the tag management system for creating, storing, and retrieving tags that persist between sessions.",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "1"
         ],
         "priority": "high",
         "details": "Create tag_manager.py module with the following features:\n1. Load and save tag library to/from ~/.image-tagger-renamer/tags.json\n2. Add new tags functionality\n3. Get full tag list\n4. Tag validation (no duplicates, valid characters)\n5. Track creation and modification timestamps\n6. Initialize with default tags if file doesn't exist\n\nImplementation details:\n```python\nimport json\nimport os\nfrom pathlib import Path\nfrom datetime import datetime\nimport fcntl\nimport re\n\nclass TagManager:\n    def __init__(self):\n        self.config_dir = Path(os.path.expanduser(\"~/.image-tagger-renamer/\"))\n        self.config_dir.mkdir(parents=True, exist_ok=True)\n        self.tags_file = self.config_dir / \"tags.json\"\n        self.default_tags = [\n            \"comics\", \"nancy\", \"sluggo\", \"popart\", \"warhol\", \n            \"fineart\", \"advertising\", \"logos\", \"food\", \"horror\", \"western\"\n        ]\n        self.tags = self.load_tags()\n    \n    def load_tags(self):\n        \"\"\"Load tags from file or create with defaults if not exists\"\"\"\n        if not self.tags_file.exists():\n            # Initialize with defaults\n            tag_data = {\n                \"tags\": self.default_tags,\n                \"created\": datetime.now().isoformat(),\n                \"last_modified\": datetime.now().isoformat(),\n                \"version\": \"1.0.0\"\n            }\n            self._save_tag_data(tag_data)\n            return self.default_tags\n        \n        try:\n            with open(self.tags_file, 'r') as f:\n                tag_data = json.load(f)\n                return tag_data.get(\"tags\", self.default_tags)\n        except (json.JSONDecodeError, IOError):\n            # If file is corrupted, reset to defaults\n            return self.default_tags\n    \n    def _save_tag_data(self, tag_data):\n        \"\"\"Atomic save of tag data with file locking\"\"\"\n        # Create temp file\n        temp_file = self.tags_file.with_suffix('.tmp')\n        \n        try:\n            with open(temp_file, 'w') as f:\n                # Use file lock for atomic write\n                fcntl.flock(f, fcntl.LOCK_EX)\n                json.dump(tag_data, f, indent=2)\n                f.flush()\n                os.fsync(f.fileno())\n            \n            # Atomic rename\n            temp_file.replace(self.tags_file)\n        finally:\n            # Clean up temp file if something went wrong\n            if temp_file.exists():\n                temp_file.unlink(missing_ok=True)\n    \n    def save_tags(self):\n        \"\"\"Save current tags to file\"\"\"\n        tag_data = {\n            \"tags\": self.tags,\n            \"last_modified\": datetime.now().isoformat(),\n            \"version\": \"1.0.0\"\n        }\n        \n        # If file exists, preserve created date\n        if self.tags_file.exists():\n            try:\n                with open(self.tags_file, 'r') as f:\n                    existing_data = json.load(f)\n                    if \"created\" in existing_data:\n                        tag_data[\"created\"] = existing_data[\"created\"]\n            except (json.JSONDecodeError, IOError):\n                tag_data[\"created\"] = datetime.now().isoformat()\n        else:\n            tag_data[\"created\"] = datetime.now().isoformat()\n            \n        self._save_tag_data(tag_data)\n    \n    def add_tag(self, tag):\n        \"\"\"Add a new tag if valid and not duplicate\"\"\"\n        # Validate tag format (alphanumeric, no spaces)\n        if not re.match(r'^[\\w-]+$', tag):\n            return False, \"Tags can only contain letters, numbers, underscores, and hyphens\"\n        \n        # Check for duplicates (case insensitive)\n        if tag.lower() in (t.lower() for t in self.tags):\n            return False, \"Tag already exists\"\n        \n        self.tags.append(tag)\n        self.save_tags()\n        return True, \"Tag added successfully\"\n    \n    def get_all_tags(self):\n        \"\"\"Return all tags\"\"\"\n        return self.tags\n```",
         "testStrategy": "1. Verify default tags are loaded correctly on first run\n2. Test adding new tags and persistence between runs\n3. Verify tag validation rejects invalid formats\n4. Test duplicate tag detection (case insensitive)\n5. Verify atomic file operations with concurrent access\n6. Test file corruption recovery (loading defaults if file corrupted)\n7. Verify timestamp tracking for created and modified dates\n8. Test with empty tag file and recovery behavior",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement TagManager class structure and initialization",
+            "description": "Create core class structure with config directory setup and default tag initialization",
+            "dependencies": [],
+            "details": "Implement __init__ method to create ~/.image-tagger-renamer/ directory, set tags.json path, and initialize tags list using load_tags(). Handle default tag population when file doesn't exist.\n<info added on 2025-11-20T20:45:05.095Z>\nCreated models/tag_manager.py module with TagManager class implementation. The __init__ method now accepts optional config_dir and default_tags parameters to support testing scenarios. The class ensures the ~/.image-tagger-renamer directory exists, automatically creates tags.json on first run if it doesn't exist, and implements tag metadata caching to improve performance for consumers. The implementation includes proper config directory resolution and default tag set bootstrapping as specified in the requirements.\n</info added on 2025-11-20T20:45:05.095Z>",
+            "status": "done",
+            "testStrategy": "Verify config directory creation and default tags initialization on first run",
+            "updatedAt": "2025-11-20T20:45:11.341Z",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Develop atomic tag storage with timestamp tracking",
+            "description": "Implement file operations with atomic writes and timestamp management",
+            "dependencies": [
+              1
+            ],
+            "details": "Create _save_tag_data method using temp files and file locking for atomic writes. Implement save_tags to maintain created/last_modified timestamps while preserving existing creation date when updating.\n<info added on 2025-11-20T20:45:30.916Z>\nImplemented atomic JSON persistence with timestamp tracking:\n- _persist() method serializes tags dictionary to JSON, preserves created timestamp for existing tags, and updates last_modified timestamp using timezone-aware ISO8601 format.\n- _save_tag_data() implements atomic file operations by writing to a temporary file (<tags>.tmp), using fcntl advisory locks when available, ensuring data is flushed to disk with fsync(), and performing atomic replacement of the target file.\n- Added helper functionality to automatically rebuild default tag payloads and recover when tags.json is missing or corrupted.\n</info added on 2025-11-20T20:45:30.916Z>",
+            "status": "done",
+            "testStrategy": "Test concurrent access scenarios and verify timestamp preservation during updates",
+            "parentId": "undefined",
+            "updatedAt": "2025-11-20T20:45:41.343Z"
+          },
+          {
+            "id": 3,
+            "title": "Implement tag validation and management functionality",
+            "description": "Add tag validation logic and management operations with error handling",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Develop add_tag method with regex validation (alphanumeric/underscore/hyphen) and case-insensitive duplicate checking. Implement get_all_tags to return current tag list. Ensure tags persist after additions.\n<info added on 2025-11-20T20:46:00.780Z>\nImplementation complete with full tag management workflow:\n\n- validate_tag() enforces character policy (alphanumeric/underscore/hyphen), prevents empty tags, and performs case-insensitive duplicate detection\n- Management API methods implemented:\n  * add_tag() - adds single validated tag\n  * add_tags() - adds multiple tags at once\n  * remove_tag() - removes existing tags\n  * reset_to_defaults() - restores tag library to default state\n  * reload() - refreshes tags from disk storage\n- Metadata accessor methods implemented:\n  * get_all_tags() - returns clean copy of current tag list\n  * get_metadata() - provides tag metadata without leaking internal dictionaries\n- Thread safety implemented with threading.Lock to ensure consistency during concurrent requests from Flask application\n</info added on 2025-11-20T20:46:00.780Z>",
+            "status": "done",
+            "testStrategy": "Test invalid character rejection, case-insensitive duplicate detection, and tag persistence verification",
+            "parentId": "undefined",
+            "updatedAt": "2025-11-20T20:46:07.284Z"
+          },
+          {
+            "id": 4,
+            "title": "Create comprehensive unit test suite",
+            "description": "Develop and execute tests covering all tag management functionality",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "Write tests for default initialization, tag addition (valid/invalid), timestamp tracking, atomic operations, and file corruption recovery. Use pytest with mocked filesystem operations.\n<info added on 2025-11-20T20:46:27.585Z>\nImplemented unittest suite in renamer-browser/tests/test_tag_manager.py with comprehensive test coverage including:\n1. Default tag initialization and persistence of tags.json\n2. Add/remove tag operations with validation (duplicate rejection with case-insensitivity and invalid character checks)\n3. Metadata timestamp updates and reset_to_defaults() functionality\n4. Corrupted file recovery via the reload() method\n\nThe test suite contains 8 tests that all pass successfully, verifying the behaviors outlined in the test strategy. Tests can be executed using:\n```\npython -m unittest discover -s renamer-browser/tests -p 'test_*.py'\n```\n</info added on 2025-11-20T20:46:27.585Z>",
+            "status": "done",
+            "testStrategy": null,
+            "parentId": "undefined",
+            "updatedAt": "2025-11-20T20:46:33.364Z"
+          }
+        ],
+        "updatedAt": "2025-11-20T20:46:33.364Z"
       },
       {
         "id": "5",
@@ -163,9 +218,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-11-20T18:54:49.862Z",
+      "lastModified": "2025-11-20T20:46:33.365Z",
       "taskCount": 7,
-      "completedCount": 1,
+      "completedCount": 3,
       "tags": [
         "renamer"
       ]
