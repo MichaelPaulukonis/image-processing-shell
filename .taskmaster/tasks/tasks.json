@@ -17,14 +17,79 @@
         "id": "2",
         "title": "File System Operations and Image Processing",
         "description": "Implement core file system operations including directory scanning, image detection, and file renaming functionality.",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "1"
         ],
         "priority": "high",
         "details": "Develop file_manager.py module with the following features:\n1. Directory scanning with support for JPG, PNG, and JP2 formats\n2. Atomic file rename operations with error handling\n3. Duplicate filename detection and automatic numbering (000, 001, etc.)\n4. File extension preservation\n5. Use pathlib for cross-platform path handling\n6. Implement safe file operations with try-except blocks\n7. Create filename generation logic based on prefix + alphabetically sorted tags + suffix + numbering\n8. Format: [prefix]_[tag1]_[tag2]_[tagN]_[suffix]_[number].ext\n9. Support for batch operations with progress tracking\n10. Handle file permission errors gracefully\n\nImplementation details:\n```python\nfrom pathlib import Path\nimport shutil\nimport os\n\ndef scan_directory(dir_path):\n    \"\"\"Scan directory for supported image files\"\"\"\n    supported_extensions = [\".jpg\", \".jpeg\", \".png\", \".jp2\"]\n    dir_path = Path(dir_path).expanduser().resolve()\n    return sorted([f for f in dir_path.iterdir() \n                   if f.is_file() and f.suffix.lower() in supported_extensions])\n\ndef generate_filename(prefix, tags, suffix, extension, counter=0):\n    \"\"\"Generate filename with alphabetically sorted tags\"\"\"\n    # Sort tags alphabetically\n    sorted_tags = sorted(tags)\n    \n    # Build filename parts\n    parts = []\n    if prefix:\n        parts.append(prefix)\n    parts.extend(sorted_tags)\n    if suffix:\n        parts.append(suffix)\n    \n    # Add counter and extension\n    filename = \"_\".join(parts)\n    if counter > 0:\n        filename += f\"_{counter:03d}\"\n    else:\n        filename += \"_000\"\n    \n    return f\"{filename}{extension}\"\n\ndef rename_file(src_path, dest_dir, prefix, tags, suffix, counter=0):\n    \"\"\"Rename a file with error handling\"\"\"\n    try:\n        src_path = Path(src_path)\n        dest_dir = Path(dest_dir)\n        extension = src_path.suffix\n        \n        new_name = generate_filename(prefix, tags, suffix, extension, counter)\n        dest_path = dest_dir / new_name\n        \n        # Check for duplicates and increment counter if needed\n        while dest_path.exists():\n            counter += 1\n            new_name = generate_filename(prefix, tags, suffix, extension, counter)\n            dest_path = dest_dir / new_name\n        \n        # Rename the file (atomic operation)\n        shutil.move(src_path, dest_path)\n        return new_name, None\n    except PermissionError:\n        return None, \"Permission denied\"\n    except Exception as e:\n        return None, str(e)\n```",
         "testStrategy": "1. Test directory scanning with various file types\n2. Verify correct identification of supported image formats\n3. Test filename generation with various combinations of prefix, tags, and suffix\n4. Verify tags are sorted alphabetically in generated filenames\n5. Test duplicate handling with sequential numbering\n6. Verify error handling for permission issues\n7. Test batch rename operations with large file sets\n8. Verify atomicity of file operations (no partial renames)\n9. Test with special characters in filenames and paths",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement directory scanning for supported image formats",
+            "description": "Develop function to scan directories and return sorted list of JPG, PNG, and JP2 files using pathlib",
+            "dependencies": [],
+            "details": "Create scan_directory() function that resolves paths, filters by extensions ['.jpg','.jpeg','.png','.jp2'] (case-insensitive), handles invalid paths, and returns sorted Path objects. Must include try-except for permission errors and invalid directories.",
+            "status": "done",
+            "testStrategy": "Test with mixed file types, empty directories, permission-restricted paths, and verify correct extension filtering and sorting",
+            "updatedAt": "2025-11-19T18:43:24.031Z",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Implement filename generation with tag sorting and numbering",
+            "description": "Create logic to generate filenames in specified format with alphabetically sorted tags and duplicate numbering",
+            "dependencies": [],
+            "details": "Develop generate_filename() function that sorts tags alphabetically, constructs [prefix]_[tag1]_[tag2]_[suffix]_[number].ext format, handles empty prefix/suffix, and formats counter as 000/001. Must preserve original file extension.",
+            "status": "done",
+            "testStrategy": "Test with various tag combinations, empty prefix/suffix, counter overflow, and verify alphabetical tag sorting and correct numbering format",
+            "parentId": "undefined",
+            "updatedAt": "2025-11-20T16:08:59.515Z"
+          },
+          {
+            "id": 3,
+            "title": "Implement atomic file rename with duplicate detection",
+            "description": "Develop error-handled rename operation that detects duplicates and preserves extensions atomically",
+            "dependencies": [
+              2
+            ],
+            "details": "Create rename_file() function using shutil.move for atomic operation. Implement while loop to increment counter until unique filename found. Preserve original extension. Handle PermissionError specifically and other exceptions with descriptive messages.\n<info added on 2025-11-20T16:31:01.367Z>\nImplementation completed successfully with following features:\n\n- Atomic file operations using shutil.move() for safe renaming\n- Automatic duplicate filename detection with counter increment (000, 001, etc.)\n- Maximum attempt limit (9999) to prevent infinite loops\n- Skip logic for files that already have the target name\n- Auto-creation of destination directory if not existing\n- Validation of source file existence and supported formats\n- Return structure as dictionary with:\n  - Success status\n  - Source and destination paths\n  - Counter value (if incremented)\n  - Detailed error information when applicable\n\nTesting confirmed successful operation for:\n- Basic file renaming with proper format\n- Automatic handling of duplicate filenames\n- Detection of already correctly named files\n- Proper tag sorting in generated filenames\n\nError handling implemented for:\n- PermissionError for access issues\n- ValueError for invalid paths/formats\n- Comprehensive logging of all operations\n- Descriptive error messages in return values\n</info added on 2025-11-20T16:31:01.367Z>",
+            "status": "done",
+            "testStrategy": "Test duplicate filename scenarios, permission errors, invalid paths, and verify atomic operation through filesystem checks and error message validation",
+            "parentId": "undefined",
+            "updatedAt": "2025-11-20T16:34:11.442Z"
+          },
+          {
+            "id": 4,
+            "title": "Implement batch rename operation with progress tracking",
+            "description": "Develop batch processing system for multiple files with progress reporting and error aggregation",
+            "dependencies": [
+              3
+            ],
+            "details": "Create batch_rename() function that processes file lists sequentially. Implement progress callback mechanism (e.g., tqdm). Track success/failure counts, aggregate errors without stopping execution, and return comprehensive operation report.\n<info added on 2025-11-20T17:02:07.259Z>\nImplemented two core functions:\n\nbatch_rename_files():\n- Processes multiple files sequentially with visible progress tracking\n- Implements graceful degradation - continues processing if individual files fail\n- Manages counter increments automatically across the entire batch\n- Provides optional progress callback for UI integration: callback(current, total, result)\n- Returns comprehensive operation summary with counts (total, successful, failed, skipped)\n- Collects all results and errors for detailed reporting\n- Integrates with existing rename_file() duplicate detection mechanism\n\nget_batch_preview():\n- Generates preview of rename operations without modifying files\n- Shows source filename, target filename, and counter value for each file\n- Supports UI confirmation dialogs before executing batch operations\n- Validates file formats and automatically excludes unsupported files\n\nTesting confirmed functionality for:\n- Accurate preview generation\n- Successful batch renaming with progress indication\n- Proper duplicate detection and auto-increment numbering\n- Real-time status updates through progress callback\n- Graceful failure handling with continued processing\n- Correct detection and skipping of already-renamed files\n\nComplete statistics tracking implemented for:\n- Total files processed in batch\n- Successfully renamed files with counter management\n- Failed operations with detailed error information\n- Skipped files (already correctly named or invalid format)\n</info added on 2025-11-20T17:02:07.259Z>",
+            "status": "done",
+            "testStrategy": "Test with large file sets, mixed success/failure scenarios, verify progress updates, and validate error aggregation and reporting structure",
+            "parentId": "undefined",
+            "updatedAt": "2025-11-20T18:50:00.055Z"
+          },
+          {
+            "id": 5,
+            "title": "Implement comprehensive error handling for file operations",
+            "description": "Ensure consistent error handling across all file operations with graceful degradation",
+            "dependencies": [
+              1,
+              3,
+              4
+            ],
+            "details": "Standardize exception handling patterns across all functions. Implement specific handlers for PermissionError, FileNotFoundError, and OSError. Add user-friendly error messages with context. Implement retry logic for transient errors where appropriate.",
+            "status": "in-progress",
+            "testStrategy": "Test all operations with simulated permission errors, disk full scenarios, and invalid inputs. Verify consistent error messages and graceful degradation behavior",
+            "parentId": "undefined",
+            "updatedAt": "2025-11-20T18:54:49.860Z"
+          }
+        ],
+        "updatedAt": "2025-11-20T18:54:49.860Z"
       },
       {
         "id": "3",
@@ -98,7 +163,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-11-19T16:57:21.844Z",
+      "lastModified": "2025-11-20T18:54:49.862Z",
       "taskCount": 7,
       "completedCount": 1,
       "tags": [

@@ -35,3 +35,6 @@ node_modules/
 # Task files
 # tasks.json
 # tasks/ 
+
+# Test artifacts
+test_data/output/

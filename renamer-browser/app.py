@@ -42,10 +42,11 @@ def create_app(folder_path=None):
             logging.warning(f"Invalid folder path: {folder_path}")
     
     # Import and register routes
-    # TODO: Register blueprints once routes are implemented
-    # from routes.main import main_bp
+    from routes.main import main_bp
+    app.register_blueprint(main_bp)
+    
+    # TODO: Register API blueprint once implemented
     # from routes.api import api_bp
-    # app.register_blueprint(main_bp)
     # app.register_blueprint(api_bp)
     
     logging.info("Application initialized successfully")
