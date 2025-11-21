@@ -25,6 +25,21 @@ body {
     min-height: 100vh;
 }
 
+:focus-visible {
+    outline: 2px solid var(--highlight);
+    outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.icon-button:focus-visible,
+.folder-row:focus-visible,
+.tag-pill:focus-visible,
+.text-input:focus-visible,
+.toggle-switch input:focus-visible + .toggle-slider {
+    outline: 2px solid var(--highlight);
+    outline-offset: 2px;
+}
+
 .app-shell {
     display: flex;
     flex-direction: column;
@@ -32,6 +47,8 @@ body {
     min-height: 100vh;
     padding: 1.5rem clamp(1rem, 4vw, 3.5rem);
     padding-bottom: clamp(10rem, 28vh, 18rem);
+    max-width: 1440px;
+    margin: 0 auto;
 }
 
 .app-header {
@@ -191,6 +208,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    overflow-y: auto;
+    padding-bottom: 1rem;
 }
 
 .loading-indicator,
@@ -233,8 +252,8 @@ body {
 
 .image-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 1.2rem;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: clamp(0.75rem, 1.5vw, 1.5rem);
 }
 
 .image-card {
@@ -606,6 +625,15 @@ label {
     }
 }
 
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
 @media (max-width: 900px) {
     .tagging-panel,
     .tagging-panel__content {
@@ -624,5 +652,32 @@ label {
     .selection-count {
         width: 100%;
         justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .controls-bar {
+        gap: 0.75rem;
+    }
+    .selection-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .tagging-panel__bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .btn.rename-button {
+        font-size: 1rem;
+    }
+}
+
+@media (min-width: 1500px) {
+    .image-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     }
 }
