@@ -113,6 +113,7 @@ class ThumbnailManager:
             with Image.open(image_path) as img:
                 img = ImageOps.exif_transpose(img)
                 img.thumbnail((self.size, self.size))
+                img = self._flatten_transparency(img)
 
                 if img.mode not in ("RGB", "L"):
                     img = img.convert("RGB")
@@ -122,6 +123,19 @@ class ThumbnailManager:
         except Exception as exc:  # Pillow raises many custom errors; catch-all is acceptable
             logger.error("Failed to create thumbnail for %s: %s", image_path, exc)
             return self._create_error_thumbnail(cache_path, str(exc))
+
+    def _flatten_transparency(self, img: Image.Image) -> Image.Image:
+        """Return an RGB image with transparency composited on white."""
+        has_transparency = img.mode in {"RGBA", "LA"} or (
+            img.mode == "P" and "transparency" in img.info
+        )
+        if not has_transparency:
+            return img
+
+        rgba = img.convert("RGBA")
+        background = Image.new("RGB", rgba.size, (255, 255, 255))
+        background.paste(rgba, mask=rgba.split()[-1])
+        return background
 
     def _create_error_thumbnail(self, cache_path: Path, reason: str) -> str:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
