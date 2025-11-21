@@ -117,6 +117,17 @@ class ThumbnailRoutesTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         response.close()
 
+    def test_directory_listing_returns_subdirectories(self) -> None:
+        nested_dir = self.image_dir / 'nested'
+        nested_dir.mkdir()
+        response = self.client.get('/api/directories', query_string={'base': str(self.image_dir)})
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload['directory'], str(self.image_dir.resolve()))
+        child_names = {entry['name'] for entry in payload['entries']}
+        self.assertIn('nested', child_names)
+        response.close()
+
     def test_tags_endpoints_roundtrip(self) -> None:
         response = self.client.get('/api/tags')
         self.assertEqual(response.status_code, 200)

@@ -67,48 +67,61 @@
         </main>
 
         <footer class="tagging-panel" aria-label="Tagging controls">
-            <div class="input-section">
-                <div class="input-group">
-                    <label for="prefix-input">Prefix</label>
-                    <input type="text" id="prefix-input" class="text-input" placeholder="e.g. monochrome">
+            <div class="tagging-panel__bar">
+                <div class="tagging-panel__title">
+                    <span class="panel-label">Batch actions plus</span>
+                    <h2>Tag &amp; Rename</h2>
                 </div>
-                <div class="input-group">
-                    <label for="suffix-input">Suffix</label>
-                    <input type="text" id="suffix-input" class="text-input" placeholder="e.g. collection">
-                </div>
+                <button id="toggle-panel-button" class="panel-toggle" aria-expanded="true" aria-controls="tagging-panel-content">
+                    <span class="toggle-text">Collapse panel</span>
+                    <span class="chevron" aria-hidden="true"></span>
+                </button>
             </div>
 
-            <div class="tag-section">
-                <div class="tag-section-header">
-                    <h2>Tags</h2>
-                    <p class="tag-hint">Click tags to toggle them for selected images</p>
+            <div id="tagging-panel-content" class="tagging-panel__content">
+                <div class="input-section">
+                    <div class="input-group">
+                        <label for="prefix-input">Prefix</label>
+                        <input type="text" id="prefix-input" class="text-input" placeholder="e.g. monochrome">
+                    </div>
+                    <div class="input-group">
+                        <label for="suffix-input">Suffix</label>
+                        <input type="text" id="suffix-input" class="text-input" placeholder="e.g. collection">
+                    </div>
                 </div>
-                <div id="tag-container" class="tag-container" role="list">
-                    <!-- Tags inserted dynamically -->
-                </div>
-                <div class="add-tag-controls">
-                    <button id="add-tag-button" class="btn add-tag" aria-expanded="false">+ Add New Tag</button>
-                    <div id="add-tag-input-container" class="add-tag-input hidden">
-                        <label class="sr-only" for="new-tag-input">New tag name</label>
-                        <input type="text" id="new-tag-input" class="text-input" placeholder="New tag name">
-                        <div class="add-tag-buttons">
-                            <button id="save-tag-button" class="btn primary">Save</button>
-                            <button id="cancel-tag-button" class="btn secondary">Cancel</button>
+
+                <div class="tag-section">
+                    <div class="tag-section-header">
+                        <h2>Tags</h2>
+                        <p class="tag-hint">Click tags to toggle them for selected images</p>
+                    </div>
+                    <div id="tag-container" class="tag-container" role="list">
+                        <!-- Tags inserted dynamically -->
+                    </div>
+                    <div class="add-tag-controls">
+                        <button id="add-tag-button" class="btn add-tag" aria-expanded="false">+ Add New Tag</button>
+                        <div id="add-tag-input-container" class="add-tag-input hidden">
+                            <label class="sr-only" for="new-tag-input">New tag name</label>
+                            <input type="text" id="new-tag-input" class="text-input" placeholder="New tag name">
+                            <div class="add-tag-buttons">
+                                <button id="save-tag-button" class="btn primary">Save</button>
+                                <button id="cancel-tag-button" class="btn secondary">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="preview-section" aria-live="polite">
-                <h2>Preview</h2>
-                <div id="filename-preview" class="filename-preview">No files selected</div>
-            </div>
+                <div class="preview-section" aria-live="polite">
+                    <h2>Preview</h2>
+                    <div id="filename-preview" class="filename-preview">No files selected</div>
+                </div>
 
-            <div class="rename-section">
-                <button id="rename-button" class="btn primary rename-button" disabled>
-                    Rename Selected Images
-                </button>
-                <p class="rename-hint">Tags are sorted automatically; numbering is appended on rename.</p>
+                <div class="rename-section">
+                    <button id="rename-button" class="btn primary rename-button" disabled>
+                        Rename Selected Images
+                    </button>
+                    <p class="rename-hint">Tags are sorted automatically; numbering is appended on rename.</p>
+                </div>
             </div>
         </footer>
     </div>
@@ -122,6 +135,19 @@
             <div class="folder-input">
                 <label for="folder-path">Folder Path</label>
                 <input type="text" id="folder-path" class="text-input" placeholder="/Users/me/Pictures" autocomplete="off">
+            </div>
+            <div class="folder-browser" aria-live="polite">
+                <div class="folder-browser__header">
+                    <p id="folder-breadcrumb" class="folder-breadcrumb">No folder selected</p>
+                    <div class="folder-browser__actions">
+                        <button id="folder-up-button" class="btn secondary small" type="button" disabled>Up one level</button>
+                        <button id="folder-refresh-button" class="btn secondary small" type="button">Refresh</button>
+                    </div>
+                </div>
+                <div id="folder-list" class="folder-list" role="listbox" aria-label="Available folders">
+                    <p class="folder-list__status">No folders to display</p>
+                </div>
+                <p class="folder-browser__hint">Single-click to select a folder, double-click to open it.</p>
             </div>
             <div class="modal-buttons">
                 <button id="select-folder-button" class="btn primary">Select</button>

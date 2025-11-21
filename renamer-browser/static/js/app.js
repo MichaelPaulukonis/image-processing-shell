@@ -11,6 +11,11 @@
         multiSelect: false,
         prefix: '',
         suffix: '',
+        folderBrowser: {
+            current: '',
+            parent: null,
+            selected: '',
+        },
     };
 
     const els = {
@@ -44,6 +49,12 @@
         newTagInput: document.getElementById('new-tag-input'),
         saveTagButton: document.getElementById('save-tag-button'),
         cancelTagButton: document.getElementById('cancel-tag-button'),
+        taggingPanel: document.querySelector('.tagging-panel'),
+        togglePanelButton: document.getElementById('toggle-panel-button'),
+        folderList: document.getElementById('folder-list'),
+        folderBreadcrumb: document.getElementById('folder-breadcrumb'),
+        folderUpButton: document.getElementById('folder-up-button'),
+        folderRefreshButton: document.getElementById('folder-refresh-button'),
     };
 
     const api = {
@@ -79,6 +90,16 @@
             if (!res.ok) throw new Error(data.error || 'Rename failed');
             return data;
         },
+        async getDirectories(basePath) {
+            const params = new URLSearchParams();
+            if (basePath) params.set('base', basePath);
+            const query = params.toString();
+            const url = query ? `/api/directories?${query}` : '/api/directories';
+            const res = await fetch(url);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Unable to list folders');
+            return data;
+        },
     };
 
     function setLoading(isLoading) {
@@ -95,14 +116,96 @@
         els.errorMessage.textContent = '';
     }
 
+    function setFolderListStatus(message) {
+        if (!els.folderList) return;
+        const status = document.createElement('p');
+        status.className = 'folder-list__status';
+        status.textContent = message;
+        els.folderList.innerHTML = '';
+        els.folderList.appendChild(status);
+    }
+
+    function highlightSelectedFolder() {
+        if (!els.folderList) return;
+        const rows = els.folderList.querySelectorAll('.folder-row');
+        rows.forEach((row) => {
+            const isSelected = row.dataset.path === state.folderBrowser.selected;
+            row.setAttribute('aria-selected', String(isSelected));
+        });
+    }
+
+    function selectFolder(path) {
+        state.folderBrowser.selected = path;
+        if (path) {
+            els.folderInput.value = path;
+        }
+        highlightSelectedFolder();
+    }
+
+    function renderFolderList(entries) {
+        if (!els.folderList) return;
+        if (!entries.length) {
+            setFolderListStatus('No subfolders found');
+            return;
+        }
+        const fragment = document.createDocumentFragment();
+        entries.forEach((entry) => {
+            const row = document.createElement('button');
+            row.type = 'button';
+            row.className = 'folder-row';
+            row.dataset.path = entry.path;
+            row.setAttribute('role', 'option');
+
+            const name = document.createElement('span');
+            name.className = 'folder-row__name';
+            name.textContent = entry.name || entry.path;
+
+            const meta = document.createElement('span');
+            meta.className = 'folder-row__meta';
+            meta.textContent = entry.is_hidden ? 'Hidden' : '';
+
+            row.appendChild(name);
+            row.appendChild(meta);
+            row.addEventListener('click', () => selectFolder(entry.path));
+            row.addEventListener('dblclick', () => loadFolderBrowser(entry.path));
+            fragment.appendChild(row);
+        });
+        els.folderList.innerHTML = '';
+        els.folderList.appendChild(fragment);
+        highlightSelectedFolder();
+    }
+
+    async function loadFolderBrowser(targetPath) {
+        if (!els.folderList) return;
+        setFolderListStatus('Loading folders...');
+        try {
+            const payload = await api.getDirectories(targetPath);
+            state.folderBrowser.current = payload.directory;
+            state.folderBrowser.parent = payload.parent;
+            if (els.folderBreadcrumb) {
+                els.folderBreadcrumb.textContent = payload.directory;
+            }
+            if (els.folderUpButton) {
+                els.folderUpButton.disabled = !payload.has_parent;
+            }
+            renderFolderList(payload.entries || []);
+            selectFolder(payload.directory);
+        } catch (error) {
+            setFolderListStatus(error.message);
+        }
+    }
+
     function openModal() {
         els.folderModal.classList.remove('hidden');
         els.folderInput.focus();
+        const seedPath = els.folderInput.value.trim() || state.directory || state.folderBrowser.current;
+        loadFolderBrowser(seedPath);
     }
 
     function closeModal() {
         els.folderModal.classList.add('hidden');
         els.folderInput.value = '';
+        state.folderBrowser.selected = '';
     }
 
     function updateSelectionUI() {
@@ -219,6 +322,8 @@
             state.images = payload.images || [];
             state.selected.clear();
             els.currentDirectory.textContent = payload.directory || directory;
+            state.folderBrowser.current = payload.directory;
+            state.folderBrowser.selected = payload.directory;
             renderImages(state.images);
         } catch (error) {
             showError(error.message);
@@ -293,13 +398,27 @@
         }
     }
 
+    function setPanelCollapsed(collapsed) {
+        if (!els.taggingPanel || !els.togglePanelButton) return;
+        els.taggingPanel.classList.toggle('is-collapsed', collapsed);
+        els.togglePanelButton.setAttribute('aria-expanded', String(!collapsed));
+        const label = els.togglePanelButton.querySelector('.toggle-text');
+        if (label) {
+            label.textContent = collapsed ? 'Expand panel' : 'Collapse panel';
+        }
+    }
+
     function bindEvents() {
         els.changeFolder.addEventListener('click', () => {
             openModal();
         });
         els.folderCancel.addEventListener('click', () => closeModal());
         els.folderSelect.addEventListener('click', () => {
-            const path = els.folderInput.value.trim();
+            const path = state.folderBrowser.selected || els.folderInput.value.trim();
+            if (!path) {
+                showError('Select or enter a folder path first');
+                return;
+            }
             closeModal();
             loadDirectory(path);
         });
@@ -313,6 +432,19 @@
                 closeModal();
             }
         });
+        if (els.folderUpButton) {
+            els.folderUpButton.addEventListener('click', () => {
+                if (state.folderBrowser.parent) {
+                    loadFolderBrowser(state.folderBrowser.parent);
+                }
+            });
+        }
+        if (els.folderRefreshButton) {
+            els.folderRefreshButton.addEventListener('click', () => {
+                const target = state.folderBrowser.current || els.folderInput.value.trim();
+                loadFolderBrowser(target);
+            });
+        }
         els.dismissError.addEventListener('click', hideError);
         els.multiSelectToggle.addEventListener('change', (event) => {
             state.multiSelect = event.target.checked;
@@ -332,6 +464,10 @@
             state.suffix = event.target.value;
             updatePreview();
         });
+        els.folderInput.addEventListener('input', () => {
+            state.folderBrowser.selected = '';
+            highlightSelectedFolder();
+        });
         els.addTagButton.addEventListener('click', () => toggleAddTagInput());
         els.cancelTagButton.addEventListener('click', () => toggleAddTagInput(false));
         els.saveTagButton.addEventListener('click', handleAddTag);
@@ -342,12 +478,19 @@
             }
         });
         els.renameButton.addEventListener('click', handleRename);
+        if (els.togglePanelButton) {
+            els.togglePanelButton.addEventListener('click', () => {
+                const collapsed = !els.taggingPanel.classList.contains('is-collapsed');
+                setPanelCollapsed(collapsed);
+            });
+        }
     }
 
     async function init() {
         bindEvents();
         await loadTags();
         updateSelectionUI();
+        setPanelCollapsed(false);
     }
 
     document.addEventListener('DOMContentLoaded', init);

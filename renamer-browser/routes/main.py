@@ -180,6 +180,42 @@ def list_images():
         return jsonify({'error': 'Unable to list images'}), 500
 
 
+@main_bp.route('/api/directories', methods=['GET'])
+def list_directories():
+    """Return subdirectories for a requested base path."""
+    config_manager = _get_config_manager()
+    requested_dir = request.args.get('base') or config_manager.get('last_directory') or str(Path.home())
+
+    try:
+        resolved_dir = _validate_directory_path(requested_dir)
+    except FileNotFoundError:
+        return jsonify({'error': 'Directory not found'}), 404
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+
+    entries: List[Dict[str, object]] = []
+    try:
+        for entry in sorted(resolved_dir.iterdir(), key=lambda path: path.name.lower()):
+            if not entry.is_dir():
+                continue
+            entries.append({
+                'name': entry.name,
+                'path': str(entry),
+                'is_hidden': entry.name.startswith('.'),
+            })
+    except PermissionError:
+        return jsonify({'error': f'Cannot access directory: {resolved_dir}'}), 403
+
+    parent = str(resolved_dir.parent) if resolved_dir != resolved_dir.parent else None
+
+    return jsonify({
+        'directory': str(resolved_dir),
+        'parent': parent,
+        'entries': entries,
+        'has_parent': parent is not None,
+    })
+
+
 @main_bp.route('/api/tags', methods=['GET'])
 def list_tags():
     """Return all saved tags and metadata."""
