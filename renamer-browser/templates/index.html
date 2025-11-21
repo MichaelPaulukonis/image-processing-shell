@@ -4,87 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Tagger & Renamer</title>
-    <style>
-        body {
-            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            text-align: center;
-            max-width: 600px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            color: #0db9f2;
-        }
-        p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: #cccccc;
-            margin-bottom: 2rem;
-        }
-        .status {
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #444444;
-        }
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #333;
-        }
-        .status-item:last-child {
-            border-bottom: none;
-        }
-        .status-label {
-            color: #888;
-        }
-        .status-value {
-            color: #0db9f2;
-        }
-        .checkmark {
-            color: #00ff00;
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
-<body>
-    <div class="container">
-        <h1>Image Tagger & Renamer</h1>
-        <p>A locally-hosted web application for viewing, tagging, and batch-renaming image files for generative art workflows.</p>
-        
-        <div class="status">
-            <h2>Development Status</h2>
-            <div class="status-item">
-                <span class="status-label">Flask Backend</span>
-                <span class="status-value checkmark">✓ Running</span>
+<body class="dark-mode">
+    <div class="app-shell">
+        <header class="app-header" role="banner">
+            <div>
+                <p class="eyebrow">Image workflow utility</p>
+                <h1>Image Tagger &amp; Renamer</h1>
             </div>
-            <div class="status-item">
-                <span class="status-label">Configuration</span>
-                <span class="status-value checkmark">✓ Initialized</span>
+            <div class="directory-display" aria-live="polite">
+                <span>Directory:</span>
+                <span id="current-directory" class="directory-path">No folder selected</span>
             </div>
-            <div class="status-item">
-                <span class="status-label">File Manager</span>
-                <span class="status-value checkmark">✓ Ready</span>
+        </header>
+
+        <section class="controls-bar" aria-label="Selection controls">
+            <div class="control-left">
+                <button id="change-folder" class="btn primary">Change Folder</button>
             </div>
-            <div class="status-item">
-                <span class="status-label">UI Implementation</span>
-                <span class="status-value">⏳ In Progress</span>
+
+            <div class="selection-controls">
+                <label class="toggle-switch" for="multi-select-toggle">
+                    <input type="checkbox" id="multi-select-toggle" aria-label="Toggle multi select">
+                    <span class="toggle-slider" aria-hidden="true"></span>
+                    <span class="toggle-label">Multi-Select</span>
+                </label>
+
+                <button id="select-all" class="btn secondary" disabled>Select All</button>
+                <button id="clear-selection" class="btn secondary" disabled>Clear</button>
+
+                <div class="selection-count" role="status" aria-live="polite">
+                    <span>Selected:</span>
+                    <span id="selected-count">0</span>
+                    <span aria-hidden="true">/</span>
+                    <span id="total-count">0</span>
+                </div>
+            </div>
+        </section>
+
+        <main class="app-main" role="main">
+            <div id="loading-indicator" class="loading-indicator hidden" role="status" aria-live="polite">
+                <div class="spinner" aria-hidden="true"></div>
+                <p>Loading images...</p>
+            </div>
+
+            <div id="error-display" class="error-display hidden" role="alert">
+                <p class="error-message">Error message goes here</p>
+                <button id="dismiss-error" class="icon-button" aria-label="Dismiss error">&times;</button>
+            </div>
+
+            <div id="image-grid" class="image-grid" role="grid" aria-label="Image gallery">
+                <!-- Populated via JavaScript -->
+            </div>
+
+            <div id="no-images" class="no-images-message hidden" role="status">
+                <p>No images found in the selected directory.</p>
+            </div>
+        </main>
+
+        <footer class="tagging-panel" aria-label="Tagging controls">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="prefix-input">Prefix</label>
+                    <input type="text" id="prefix-input" class="text-input" placeholder="e.g. monochrome">
+                </div>
+                <div class="input-group">
+                    <label for="suffix-input">Suffix</label>
+                    <input type="text" id="suffix-input" class="text-input" placeholder="e.g. collection">
+                </div>
+            </div>
+
+            <div class="tag-section">
+                <div class="tag-section-header">
+                    <h2>Tags</h2>
+                    <p class="tag-hint">Click tags to toggle them for selected images</p>
+                </div>
+                <div id="tag-container" class="tag-container" role="list">
+                    <!-- Tags inserted dynamically -->
+                </div>
+                <div class="add-tag-controls">
+                    <button id="add-tag-button" class="btn add-tag" aria-expanded="false">+ Add New Tag</button>
+                    <div id="add-tag-input-container" class="add-tag-input hidden">
+                        <label class="sr-only" for="new-tag-input">New tag name</label>
+                        <input type="text" id="new-tag-input" class="text-input" placeholder="New tag name">
+                        <div class="add-tag-buttons">
+                            <button id="save-tag-button" class="btn primary">Save</button>
+                            <button id="cancel-tag-button" class="btn secondary">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-section" aria-live="polite">
+                <h2>Preview</h2>
+                <div id="filename-preview" class="filename-preview">No files selected</div>
+            </div>
+
+            <div class="rename-section">
+                <button id="rename-button" class="btn primary rename-button" disabled>
+                    Rename Selected Images
+                </button>
+                <p class="rename-hint">Tags are sorted automatically; numbering is appended on rename.</p>
+            </div>
+        </footer>
+    </div>
+
+    <div id="folder-select-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="folder-modal-title">
+        <div class="modal-content">
+            <div>
+                <h2 id="folder-modal-title">Select Folder</h2>
+                <p class="modal-subtitle">Enter or paste a full path to load images from.</p>
+            </div>
+            <div class="folder-input">
+                <label for="folder-path">Folder Path</label>
+                <input type="text" id="folder-path" class="text-input" placeholder="/Users/me/Pictures" autocomplete="off">
+            </div>
+            <div class="modal-buttons">
+                <button id="select-folder-button" class="btn primary">Select</button>
+                <button id="cancel-folder-button" class="btn secondary">Cancel</button>
             </div>
         </div>
-        
-        <p style="margin-top: 2rem; font-size: 0.9rem;">
-            <strong>Current Progress:</strong> Task 2 (File System Operations) - Subtasks 2.1 and 2.2 complete
-        </p>
     </div>
+
+    <template id="image-card-template">
+        <article class="image-card" role="gridcell" tabindex="0">
+            <div class="thumbnail-wrapper">
+                <img data-thumbnail src="" alt="Image thumbnail">
+                <div class="selection-overlay" aria-hidden="true">
+                    <span class="checkmark">✔</span>
+                </div>
+            </div>
+            <p class="image-name" data-filename>filename.png</p>
+        </article>
+    </template>
+
+    <template id="tag-pill-template">
+        <button class="tag-pill" type="button" data-tag="">
+            <span class="tag-label"></span>
+        </button>
+    </template>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </body>
 </html>

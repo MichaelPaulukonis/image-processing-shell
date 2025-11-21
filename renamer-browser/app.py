@@ -5,14 +5,24 @@ A locally-hosted web application for viewing, tagging, and batch-renaming
 image files for generative art workflows.
 """
 import argparse
+import atexit
 import logging
 from pathlib import Path
-from flask import Flask
+from typing import Optional
+
+from flask import Flask  # type: ignore[import-untyped]
 
 from config import ConfigManager
+from models.tag_manager import TagManager
+from models.thumbnail_manager import ThumbnailManager, DEFAULT_SIZE as DEFAULT_THUMBNAIL_SIZE
 
 
-def create_app(folder_path=None):
+def create_app(
+    folder_path: Optional[str] = None,
+    config_manager: Optional[ConfigManager] = None,
+    thumbnail_manager: Optional[ThumbnailManager] = None,
+    tag_manager: Optional[TagManager] = None,
+):
     """
     Application factory for creating Flask app instance.
     
@@ -25,19 +35,33 @@ def create_app(folder_path=None):
     app = Flask(__name__)
     
     # Initialize configuration
-    config_manager = ConfigManager()
+    config_manager = config_manager or ConfigManager()
     config_manager.initialize_tags()
     
-    # Store config manager in app context
+    # Initialize thumbnail manager (allows injection for tests)
+    if thumbnail_manager is None:
+        configured_size = config_manager.get('thumbnail_size', DEFAULT_THUMBNAIL_SIZE) or DEFAULT_THUMBNAIL_SIZE
+        thumbnail_manager = ThumbnailManager(
+            cache_root=config_manager.config_dir,
+            size=int(configured_size),
+        )
+        atexit.register(thumbnail_manager.shutdown)
+
+    if tag_manager is None:
+        tag_manager = TagManager(config_dir=config_manager.config_dir)
+
+    # Store managers in app context
     app.config['CONFIG_MANAGER'] = config_manager
+    app.config['THUMBNAIL_MANAGER'] = thumbnail_manager
+    app.config['TAG_MANAGER'] = tag_manager
     
     # Store initial folder path if provided
     if folder_path:
-        folder_path = Path(folder_path).expanduser().resolve()
-        if folder_path.exists() and folder_path.is_dir():
-            app.config['INITIAL_FOLDER'] = str(folder_path)
-            config_manager.set('last_directory', str(folder_path))
-            logging.info(f"Initial folder set to: {folder_path}")
+        resolved_folder = Path(folder_path).expanduser().resolve()
+        if resolved_folder.exists() and resolved_folder.is_dir():
+            app.config['INITIAL_FOLDER'] = str(resolved_folder)
+            config_manager.set('last_directory', str(resolved_folder))
+            logging.info(f"Initial folder set to: {resolved_folder}")
         else:
             logging.warning(f"Invalid folder path: {folder_path}")
     
