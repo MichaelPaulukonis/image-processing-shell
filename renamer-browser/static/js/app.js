@@ -55,6 +55,10 @@
         folderBreadcrumb: document.getElementById('folder-breadcrumb'),
         folderUpButton: document.getElementById('folder-up-button'),
         folderRefreshButton: document.getElementById('folder-refresh-button'),
+        headerWrapper: document.querySelector('.header-wrapper'),
+        toggleHeader: document.getElementById('toggle-header'),
+        jumpToFirst: document.getElementById('jump-to-first'),
+        jumpToLast: document.getElementById('jump-to-last'),
     };
 
     const api = {
@@ -98,6 +102,16 @@
             const res = await fetch(url);
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Unable to list folders');
+            return data;
+        },
+        async parseFilenames(filenames) {
+            const res = await fetch('/api/parse-filenames', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filenames }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to parse filenames');
             return data;
         },
     };
@@ -215,7 +229,54 @@
         els.clearSelection.disabled = !hasSelection;
         els.renameButton.disabled = !hasSelection;
         els.selectAll.disabled = state.images.length === 0;
+        
+        // Parse filenames when selection changes (if multiple files selected)
+        if (state.selected.size > 1) {
+            analyzeSelectedFilenames();
+        }
+        
         updatePreview();
+    }
+    
+    async function analyzeSelectedFilenames() {
+        if (state.selected.size < 2) return;
+        
+        try {
+            // Extract just the filenames from the full paths
+            const filenames = Array.from(state.selected).map(path => {
+                const parts = path.split('/');
+                return parts[parts.length - 1];
+            });
+            
+            // Call the API to parse filenames
+            const analysis = await api.parseFilenames(filenames);
+            
+            // Update UI with suggestions if we found patterns
+            if (analysis.suggested_tags && analysis.suggested_tags.length > 0) {
+                // Pre-select suggested tags
+                analysis.suggested_tags.forEach(tag => {
+                    state.activeTags.add(tag);
+                });
+                renderTags(state.tags);
+            }
+            
+            // Pre-fill prefix if found
+            if (analysis.suggested_prefix) {
+                state.prefix = analysis.suggested_prefix;
+                els.prefixInput.value = analysis.suggested_prefix;
+            }
+            
+            // Pre-fill suffix if found
+            if (analysis.suggested_suffix) {
+                state.suffix = analysis.suggested_suffix;
+                els.suffixInput.value = analysis.suggested_suffix;
+            }
+            
+            updatePreview();
+        } catch (err) {
+            // Silently fail - filename parsing is a convenience feature
+            console.warn('Filename parsing failed:', err);
+        }
     }
 
     function updatePreview() {
@@ -233,6 +294,7 @@
         els.imageGrid.innerHTML = '';
         if (!images.length) {
             els.noImages.classList.remove('hidden');
+            updateNavigationButtons();
             return;
         }
         els.noImages.classList.add('hidden');
@@ -245,6 +307,7 @@
             card.dataset.path = image.path;
             card.setAttribute('aria-pressed', state.selected.has(image.path));
             card.addEventListener('click', () => toggleSelection(image.path));
+            card.addEventListener('dblclick', () => openImagePreview(image));
             card.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault();
@@ -258,6 +321,76 @@
         });
         els.imageGrid.appendChild(fragment);
         updateSelectionUI();
+        updateNavigationButtons();
+    }
+    // Image Preview Modal logic
+    const imagePreviewModal = document.getElementById('image-preview-modal');
+    const previewImage = document.getElementById('preview-image');
+    const previewFilename = document.getElementById('preview-filename');
+    const previewFilesize = document.getElementById('preview-filesize');
+    const previewDimensions = document.getElementById('preview-dimensions');
+    const closeImagePreview = document.getElementById('close-image-preview');
+
+    function openImagePreview(image) {
+        if (!imagePreviewModal) return;
+        // Use /images/<filename> route for preview
+        // Only send the filename, not the full path
+        const filename = image.name || (image.path.split('/').pop());
+        const encodedFilename = encodeURIComponent(filename);
+        previewImage.src = `/images/${encodedFilename}`;
+        previewImage.alt = `Preview of ${image.name}`;
+        previewFilename.textContent = image.name || image.path;
+        previewFilesize.textContent = formatFilesize(image.size);
+        if (image.width && image.height) {
+            previewDimensions.textContent = `${image.width} × ${image.height} px`;
+        } else {
+            previewDimensions.textContent = '';
+        }
+        // Set white background for transparent images
+        previewImage.style.background = '#fff';
+        // Constrain image size to fit modal
+        // Constrain image size to fit modal and viewport
+        previewImage.style.maxWidth = '100%'; // never exceed modal width
+        previewImage.style.maxHeight = '70vh'; // never exceed viewport height
+        previewImage.style.objectFit = 'contain';
+        previewImage.style.display = 'block';
+        previewImage.style.margin = '0 auto'; // center horizontally
+        // Ensure modal itself is centered and constrained
+        if (imagePreviewModal) {
+            imagePreviewModal.style.overflowY = 'auto';
+            imagePreviewModal.style.maxWidth = '600px'; // modal max width
+            imagePreviewModal.style.margin = '40px auto'; // vertical and horizontal centering
+        }
+        imagePreviewModal.classList.remove('hidden');
+        previewImage.onload = () => {
+            // If dimensions not provided, get from image element
+            if (!image.width || !image.height) {
+                previewDimensions.textContent = `${previewImage.naturalWidth} × ${previewImage.naturalHeight} px`;
+            }
+        };
+    }
+
+    function closeImagePreviewModal() {
+        if (imagePreviewModal) {
+            imagePreviewModal.classList.add('hidden');
+            previewImage.src = '';
+        }
+    }
+
+    if (closeImagePreview) {
+        closeImagePreview.addEventListener('click', closeImagePreviewModal);
+    }
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && imagePreviewModal && !imagePreviewModal.classList.contains('hidden')) {
+            closeImagePreviewModal();
+        }
+    });
+
+    function formatFilesize(bytes) {
+        if (!bytes || isNaN(bytes)) return '';
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
     }
 
     function renderTags(tags) {
@@ -276,6 +409,20 @@
         els.tagContainer.appendChild(fragment);
     }
 
+    function updateActiveTagsFromSelection() {
+        // Aggregate tags from all selected images
+        const selectedImages = state.images.filter(img => state.selected.has(img.path));
+        const tagSet = new Set();
+        selectedImages.forEach(img => {
+            if (Array.isArray(img.tags)) {
+                img.tags.forEach(tag => tagSet.add(tag));
+            }
+        });
+        state.activeTags = tagSet;
+        renderTags(state.tags);
+        updatePreview();
+    }
+
     function toggleSelection(path) {
         if (!state.multiSelect) {
             state.selected.clear();
@@ -290,6 +437,7 @@
             card.setAttribute('aria-pressed', isSelected);
         });
         updateSelectionUI();
+        updateActiveTagsFromSelection();
     }
 
     function toggleTag(tag) {
@@ -305,11 +453,13 @@
     function selectAllImages() {
         state.images.forEach((img) => state.selected.add(img.path));
         renderImages(state.images);
+        updateActiveTagsFromSelection();
     }
 
     function clearSelection() {
         state.selected.clear();
         renderImages(state.images);
+        updateActiveTagsFromSelection();
     }
 
     async function loadDirectory(directory) {
@@ -484,6 +634,76 @@
                 setPanelCollapsed(collapsed);
             });
         }
+        
+        // Header toggle and navigation controls
+        if (els.toggleHeader) {
+            els.toggleHeader.addEventListener('click', toggleHeaderVisibility);
+        }
+        if (els.jumpToFirst) {
+            els.jumpToFirst.addEventListener('click', jumpToFirstImage);
+        }
+        if (els.jumpToLast) {
+            els.jumpToLast.addEventListener('click', jumpToLastImage);
+        }
+        
+        // Add scroll listener for sticky header effect
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll > 50) {
+                els.headerWrapper.classList.add('is-sticky');
+            } else {
+                els.headerWrapper.classList.remove('is-sticky');
+            }
+            lastScroll = currentScroll;
+        });
+    }
+    
+    function toggleHeaderVisibility() {
+        const isCollapsed = els.headerWrapper.classList.toggle('is-collapsed');
+        els.toggleHeader.setAttribute('aria-pressed', !isCollapsed);
+        
+        // Save preference to localStorage
+        try {
+            localStorage.setItem('headerCollapsed', isCollapsed);
+        } catch (e) {
+            console.warn('Could not save header state to localStorage:', e);
+        }
+    }
+    
+    function jumpToFirstImage() {
+        const firstCard = els.imageGrid.querySelector('.image-card');
+        if (firstCard) {
+            firstCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            firstCard.focus();
+        }
+    }
+    
+    function jumpToLastImage() {
+        const cards = els.imageGrid.querySelectorAll('.image-card');
+        const lastCard = cards[cards.length - 1];
+        if (lastCard) {
+            lastCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            lastCard.focus();
+        }
+    }
+    
+    function updateNavigationButtons() {
+        const hasImages = state.images.length > 0;
+        els.jumpToFirst.disabled = !hasImages;
+        els.jumpToLast.disabled = !hasImages;
+    }
+    
+    function restoreHeaderState() {
+        try {
+            const collapsed = localStorage.getItem('headerCollapsed') === 'true';
+            if (collapsed) {
+                els.headerWrapper.classList.add('is-collapsed');
+                els.toggleHeader.setAttribute('aria-pressed', 'false');
+            }
+        } catch (e) {
+            console.warn('Could not restore header state from localStorage:', e);
+        }
     }
 
     async function init() {
@@ -491,6 +711,8 @@
         await loadTags();
         updateSelectionUI();
         setPanelCollapsed(false);
+        restoreHeaderState();
+        updateNavigationButtons();
     }
 
     document.addEventListener('DOMContentLoaded', init);
