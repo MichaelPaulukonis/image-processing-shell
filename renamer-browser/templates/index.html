@@ -11,40 +11,54 @@
 </head>
 <body class="dark-mode">
     <div class="app-shell">
-        <header class="app-header" role="banner">
-            <div>
-                <p class="eyebrow">Image workflow utility</p>
-                <h1>Image Tagger &amp; Renamer</h1>
-            </div>
-            <div class="directory-display" aria-live="polite">
-                <span>Directory:</span>
-                <span id="current-directory" class="directory-path">No folder selected</span>
-            </div>
-        </header>
-
-        <section class="controls-bar" aria-label="Selection controls">
-            <div class="control-left">
-                <button id="change-folder" class="btn primary">Change Folder</button>
-            </div>
-
-            <div class="selection-controls">
-                <label class="toggle-switch" for="multi-select-toggle">
-                    <input type="checkbox" id="multi-select-toggle" aria-label="Toggle multi select">
-                    <span class="toggle-slider" aria-hidden="true"></span>
-                    <span class="toggle-label">Multi-Select</span>
-                </label>
-
-                <button id="select-all" class="btn secondary" disabled>Select All</button>
-                <button id="clear-selection" class="btn secondary" disabled>Clear</button>
-
-                <div class="selection-count" role="status" aria-live="polite">
-                    <span>Selected:</span>
-                    <span id="selected-count">0</span>
-                    <span aria-hidden="true">/</span>
-                    <span id="total-count">0</span>
+        <div class="header-wrapper">
+            <header class="app-header" role="banner">
+                <div>
+                    <p class="eyebrow">Image workflow utility</p>
+                    <h1>Image Tagger &amp; Renamer</h1>
                 </div>
-            </div>
-        </section>
+                <div class="directory-display" aria-live="polite">
+                    <span>Directory:</span>
+                    <span id="current-directory" class="directory-path">No folder selected</span>
+                </div>
+            </header>
+
+            <section class="controls-bar" aria-label="Selection controls">
+                <div class="control-left">
+                    <button id="change-folder" class="btn primary">Change Folder</button>
+                </div>
+
+                <div class="selection-controls">
+                    <label class="toggle-switch" for="multi-select-toggle">
+                        <input type="checkbox" id="multi-select-toggle" aria-label="Toggle multi select">
+                        <span class="toggle-slider" aria-hidden="true"></span>
+                        <span class="toggle-label">Multi-Select</span>
+                    </label>
+
+                    <button id="select-all" class="btn secondary" disabled>Select All</button>
+                    <button id="clear-selection" class="btn secondary" disabled>Clear</button>
+
+                    <div class="selection-count" role="status" aria-live="polite">
+                        <span>Selected:</span>
+                        <span id="selected-count">0</span>
+                        <span aria-hidden="true">/</span>
+                        <span id="total-count">0</span>
+                    </div>
+                </div>
+
+                <div class="gallery-controls">
+                    <button id="jump-to-first" class="btn icon-btn" aria-label="Jump to first image" disabled title="Jump to first image">
+                        <span aria-hidden="true">⇈</span>
+                    </button>
+                    <button id="jump-to-last" class="btn icon-btn" aria-label="Jump to last image" disabled title="Jump to last image">
+                        <span aria-hidden="true">⇊</span>
+                    </button>
+                    <button id="toggle-header" class="btn icon-btn" aria-label="Toggle header visibility" aria-pressed="true" title="Toggle header">
+                        <span aria-hidden="true">▼</span>
+                    </button>
+                </div>
+            </section>
+        </div>
 
         <main class="app-main" role="main">
             <div id="loading-indicator" class="loading-indicator hidden" role="status" aria-live="polite">
@@ -174,6 +188,8 @@
         </button>
     </template>
 
+    <!-- Image Preview Modal -->
+    {% include 'image-preview-modal.html' %}
     <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </body>
 </html>

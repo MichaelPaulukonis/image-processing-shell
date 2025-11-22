@@ -51,6 +51,35 @@ body {
     margin: 0 auto;
 }
 
+/* Sticky header wrapper */
+.header-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    padding-top: 1.5rem;
+    margin-top: -1.5rem;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.header-wrapper.is-sticky {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.header-wrapper.is-collapsed {
+    transform: translateY(calc(-100% + 3rem));
+}
+
+.header-wrapper.is-collapsed .app-header {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+}
+
 .app-header {
     display: flex;
     flex-wrap: wrap;
@@ -60,6 +89,8 @@ body {
     border: 1px solid var(--border);
     border-radius: 18px;
     background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(0,0,0,0.35));
+    transition: all 0.3s ease-in-out;
+    margin-bottom: 1rem;
 }
 
 .app-header h1 {
@@ -98,6 +129,11 @@ body {
     padding: 1rem;
     background: var(--panel);
     align-items: center;
+    transition: all 0.3s ease-in-out;
+}
+
+.header-wrapper.is-collapsed .controls-bar {
+    border-radius: 18px;
 }
 
 .selection-controls {
@@ -105,6 +141,31 @@ body {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
+}
+
+.gallery-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    min-width: 2.5rem;
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn span {
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+#toggle-header[aria-pressed="true"] span {
+    transform: rotate(180deg);
 }
 
 .selection-count {

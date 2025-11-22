@@ -9,6 +9,7 @@ import atexit
 import logging
 from pathlib import Path
 from typing import Optional
+from routes.main import main_bp
 
 from flask import Flask  # type: ignore[import-untyped]
 
@@ -66,7 +67,6 @@ def create_app(
             logging.warning(f"Invalid folder path: {folder_path}")
     
     # Import and register routes
-    from routes.main import main_bp
     app.register_blueprint(main_bp)
     
     # TODO: Register API blueprint once implemented

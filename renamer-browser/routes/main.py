@@ -1,5 +1,6 @@
-"""Main routes and API endpoints for Image Tagger & Renamer application."""
+
 from __future__ import annotations
+"""Main routes and API endpoints for Image Tagger & Renamer application."""
 
 from pathlib import Path
 from typing import Dict, List
@@ -17,11 +18,34 @@ from flask import (
 
 from config import ConfigManager
 from models.file_manager import is_supported_image, rename_file, scan_directory
+from models.filename_parser import FilenameParser
 from models.tag_manager import TagManager
 from models.thumbnail_manager import ThumbnailManager
 
-
 main_bp = Blueprint('main', __name__)
+
+
+@main_bp.route('/images/<path:filename>')
+def serve_image(filename):
+    """Serve original image file for preview modal, securely from a known base directory."""
+    # Define your base image directory here
+    BASE_IMAGE_DIR = Path("/Users/michaelpaulukonis/projects/genart-monorepo/apps/duo-chrome/public/images")
+
+    # Prevent directory traversal
+    safe_path = Path(filename)
+    if safe_path.is_absolute():
+        # If absolute, ensure it's under the base directory
+        try:
+            safe_path = safe_path.relative_to(BASE_IMAGE_DIR)
+        except ValueError:
+            abort(403, description='Forbidden: image path outside base directory')
+    # Now resolve full path
+    image_path = BASE_IMAGE_DIR / safe_path
+    if not image_path.exists() or not image_path.is_file():
+        abort(404, description='Image not found')
+    if not is_supported_image(image_path):
+        abort(400, description='Unsupported image format')
+    return send_file(image_path, mimetype='image/png')
 
 
 def _get_thumbnail_manager() -> ThumbnailManager:
@@ -235,6 +259,30 @@ def create_tag():
     success, message = tag_manager.add_tag(tag_value)
     status = 200 if success else 400
     return jsonify({'success': success, 'message': message, 'tags': tag_manager.get_all_tags()}), status
+
+
+@main_bp.route('/api/parse-filenames', methods=['POST'])
+def parse_filenames():
+    """Analyze filenames to detect common patterns, tags, prefixes, and suffixes."""
+    payload = request.get_json(silent=True) or {}
+    filenames = payload.get('filenames')
+    
+    if not isinstance(filenames, list) or not filenames:
+        return jsonify({'error': 'Request must include a non-empty filenames array'}), 400
+    
+    # Validate that all items are strings
+    if not all(isinstance(fn, str) for fn in filenames):
+        return jsonify({'error': 'All filenames must be strings'}), 400
+    
+    # Get known tags from tag manager
+    tag_manager = _get_tag_manager()
+    known_tags = tag_manager.get_all_tags()
+    
+    # Create parser and analyze filenames
+    parser = FilenameParser(known_tags=known_tags)
+    analysis = parser.analyze_filenames(filenames)
+    
+    return jsonify(analysis)
 
 
 @main_bp.route('/api/rename', methods=['POST'])
