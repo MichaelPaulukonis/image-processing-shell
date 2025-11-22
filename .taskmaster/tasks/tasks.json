@@ -14,16 +14,16 @@
         "updatedAt": "2025-11-19T16:57:21.843Z"
       },
       {
-        "id": 13,
-        "title": "Show Large Image Preview in Gallery",
-        "description": "When a user clicks on a thumbnail, display a larger preview of the image in a modal or overlay, allowing for closer inspection before batch operations.",
-        "details": "Implement a modal or overlay that appears when a thumbnail is clicked. The modal should display a larger version of the image, with options to close or navigate between images.\n\nAdditional requirements:\n- The image preview should fit within the browser window (not full-size if the image is larger than the viewport).\n- Display the full filename (not truncated).\n- Show the image filesize (in KB/MB).\n- Show image dimensions (width × height in pixels).\n- Ensure accessibility (keyboard navigation, ARIA labels) and smooth transitions.\n- The preview should not block other gallery interactions.",
-        "testStrategy": "1. Functional Testing: Verify modal opens on thumbnail click, displays correct image, and closes as expected. 2. Accessibility Testing: Confirm keyboard navigation and ARIA labels. 3. Usability Testing: Ensure smooth transitions and non-blocking behavior. 4. Verify that the image fits within the browser window and does not overflow. 5. Confirm that the full filename, filesize, and dimensions are displayed correctly.",
-        "status": "pending",
-        "dependencies": ["3", "6", "7"],
-        "priority": "medium",
-        "subtasks": []
-      },
+        "id": "2",
+        "title": "File System Operations and Image Processing",
+        "description": "Implement core file system operations including directory scanning, image detection, and file renaming functionality.",
+        "status": "done",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "high",
+        "details": "Develop file_manager.py module with the following features:\n1. Directory scanning with support for JPG, PNG, and JP2 formats\n2. Atomic file rename operations with error handling\n3. Duplicate filename detection and automatic numbering (000, 001, etc.)\n4. File extension preservation\n5. Use pathlib for cross-platform path handling\n6. Implement safe file operations with try-except blocks\n7. Create filename generation logic based on prefix + alphabetically sorted tags + suffix + numbering\n8. Format: [prefix]_[tag1]_[tag2]_[tagN]_[suffix]_[number].ext\n9. Support for batch operations with progress tracking\n10. Handle file permission errors gracefully\n\nImplementation details:\n```python\nfrom pathlib import Path\nimport shutil\nimport os\n\ndef scan_directory(dir_path):\n    \"\"\"Scan directory for supported image files\"\"\"\n    supported_extensions = [\".jpg\", \".jpeg\", \".png\", \".jp2\"]\n    dir_path = Path(dir_path).expanduser().resolve()\n    return sorted([f for f in dir_path.iterdir() \n                   if f.is_file() and f.suffix.lower() in supported_extensions])\n\ndef generate_filename(prefix, tags, suffix, extension, counter=0):\n    \"\"\"Generate filename with alphabetically sorted tags\"\"\"\n    # Sort tags alphabetically\n    sorted_tags = sorted(tags)\n    \n    # Build filename parts\n    parts = []\n    if prefix:\n        parts.append(prefix)\n    parts.extend(sorted_tags)\n    if suffix:\n        parts.append(suffix)\n    \n    # Add counter and extension\n    filename = \"_\".join(parts)\n    if counter > 0:\n        filename += f\"_{counter:03d}\"\n    else:\n        filename += \"_000\"\n    \n    return f\"{filename}{extension}\"\n\ndef rename_file(src_path, dest_dir, prefix, tags, suffix, counter=0):\n    \"\"\"Rename a file with error handling\"\"\"\n    try:\n        src_path = Path(src_path)\n        dest_dir = Path(dest_dir)\n        extension = src_path.suffix\n        \n        new_name = generate_filename(prefix, tags, suffix, extension, counter)\n        dest_path = dest_dir / new_name\n        \n        # Check for duplicates and increment counter if needed\n        while dest_path.exists():\n            counter += 1\n            new_name = generate_filename(prefix, tags, suffix, extension, counter)\n            dest_path = dest_dir / new_name\n        \n        # Rename the file (atomic operation)\n        shutil.move(src_path, dest_path)\n        return new_name, None\n    except PermissionError:\n        return None, \"Permission denied\"\n    except Exception as e:\n        return None, str(e)\n```",
+        "testStrategy": "1. Test directory scanning with various file types\n2. Verify correct identification of supported image formats\n3. Test filename generation with various combinations of prefix, tags, and suffix\n4. Verify tags are sorted alphabetically in generated filenames\n5. Test duplicate handling with sequential numbering\n6. Verify error handling for permission issues\n7. Test batch rename operations with large file sets\n8. Verify atomicity of file operations (no partial renames)\n9. Test with special characters in filenames and paths",
         "subtasks": [
           {
             "id": 1,
@@ -350,14 +350,15 @@
         "description": "Enable on-demand viewing of full-size original images by implementing a modal dialog that opens when a thumbnail is double-clicked, ensuring only the requested image is loaded.",
         "details": "Implement a full-size image viewing system with the following components:\n\n1. User Interaction:\n   - Add double-click event listener to thumbnails in the grid view\n   - Optionally implement alternative methods (context menu \"View Original\", keyboard shortcut)\n   - Show loading indicator while the original image is being fetched\n\n2. Modal Implementation:\n   - Create a modal/dialog component that overlays the main application\n   - Include proper keyboard access (Esc to close)\n   - Add navigation controls for browsing to next/previous images without closing modal\n   - Implement image zoom controls (zoom in/out, fit to screen, actual size)\n\n3. Image Loading:\n   - Lazy-load only the specific image requested (no preloading of other originals)\n   - Handle large images efficiently to prevent excessive memory usage\n   - Support cancellation of loading if user closes the modal before loading completes\n   - Implement error handling for cases where the original image can't be loaded\n\n4. Performance Considerations:\n   - Use background worker or async loading to maintain UI responsiveness\n   - Consider implementing progressive loading for very large images\n   - Cache recently viewed full-size images in memory (with appropriate limits)\n   - Release memory when modal is closed\n\n5. UI Design:\n   - Add subtle animations for modal open/close\n   - Display image metadata (filename, dimensions, size) in the modal\n   - Ensure modal is responsive and works across different screen sizes",
         "testStrategy": "1. Functional Testing:\n   - Verify double-click on thumbnails correctly opens the modal\n   - Test that the modal displays the full-size version of the selected image\n   - Confirm modal can be closed via close button, Esc key, and clicking outside\n   - Test navigation between images in the modal works correctly\n\n2. Performance Testing:\n   - Measure memory usage when viewing very large images\n   - Verify that only the requested image is loaded, not all images\n   - Test with a large collection of images to ensure UI remains responsive\n   - Measure load time for different image sizes and formats\n\n3. Edge Case Testing:\n   - Test behavior when the original image file is missing or corrupted\n   - Verify proper handling of extremely large images\n   - Test across different image formats (JPG, PNG, JP2/JPEG2000)\n   - Ensure zoom functions work correctly for both small and large images\n\n4. Usability Testing:\n   - Verify modal controls are intuitive and accessible\n   - Test keyboard navigation throughout the modal interface\n   - Ensure zoom level is maintained when navigating between images\n   - Confirm that image position is properly centered/managed during zoom operations",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "3",
           "6",
           "7"
         ],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2025-11-22T20:46:49.341Z"
       },
       {
         "id": "14",
@@ -393,9 +394,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2025-11-22T18:24:47.938Z",
+      "lastModified": "2025-11-22T20:46:49.344Z",
       "taskCount": 15,
-      "completedCount": 8,
+      "completedCount": 9,
       "tags": [
         "renamer"
       ]
