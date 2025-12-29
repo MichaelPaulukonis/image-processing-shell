@@ -25,26 +25,39 @@ from models.thumbnail_manager import ThumbnailManager
 main_bp = Blueprint('main', __name__)
 
 
-@main_bp.route('/images/<path:filename>')
-def serve_image(filename):
-    """Serve original image file for preview modal, securely from a known base directory."""
-    # Define your base image directory here
-    BASE_IMAGE_DIR = Path("/Users/michaelpaulukonis/projects/genart-monorepo/apps/duo-chrome/public/images")
+@main_bp.route('/api/preview-image')
+def serve_image():
+    """Serve original image file for preview modal via query param."""
+    filename = request.args.get('path')
+    if not filename:
+        abort(400, description="Query parameter 'path' is required")
 
-    # Prevent directory traversal
-    safe_path = Path(filename)
-    if safe_path.is_absolute():
-        # If absolute, ensure it's under the base directory
-        try:
-            safe_path = safe_path.relative_to(BASE_IMAGE_DIR)
-        except ValueError:
-            abort(403, description='Forbidden: image path outside base directory')
-    # Now resolve full path
-    image_path = BASE_IMAGE_DIR / safe_path
+    # Check if filename is actually an absolute path
+    try:
+        # If the frontend sends an absolute path (e.g. /Users/me/img.png), 
+        # flask might treat it as absolute.
+        image_path = Path(filename).resolve()
+    except OSError:
+         abort(400, description='Invalid path format')
+
+    # If it's not absolute, we technically don't know where it is unless we use
+    # the 'last_directory' from config, but the frontend should send absolute paths now.
+    # For backward compatibility or if just filename is sent, we could check last_dir.
+    if not image_path.is_absolute():
+         # Fallback: try to find it in the current working directory or last_directory
+         config_manager = _get_config_manager()
+         last_dir = config_manager.get('last_directory')
+         if last_dir:
+             candidate = Path(last_dir) / filename
+             if candidate.exists():
+                 image_path = candidate
+
     if not image_path.exists() or not image_path.is_file():
         abort(404, description='Image not found')
+    
     if not is_supported_image(image_path):
         abort(400, description='Unsupported image format')
+        
     return send_file(image_path, mimetype='image/png')
 
 

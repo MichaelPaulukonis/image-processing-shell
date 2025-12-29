@@ -333,11 +333,10 @@
 
     function openImagePreview(image) {
         if (!imagePreviewModal) return;
-        // Use /images/<filename> route for preview
-        // Only send the filename, not the full path
-        const filename = image.name || (image.path.split('/').pop());
-        const encodedFilename = encodeURIComponent(filename);
-        previewImage.src = `/images/${encodedFilename}`;
+        // Use /api/preview-image?path=<path> route for preview
+        // Send the full path (encoded) so the backend can resolve it absolutely
+        const encodedPath = encodeURIComponent(image.path);
+        previewImage.src = `/api/preview-image?path=${encodedPath}`;
         previewImage.alt = `Preview of ${image.name}`;
         previewFilename.textContent = image.name || image.path;
         previewFilesize.textContent = formatFilesize(image.size);

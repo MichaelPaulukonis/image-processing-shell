@@ -2,7 +2,7 @@
   "renamer": {
     "tasks": [
       {
-        "id": "1",
+        "id": 1,
         "title": "Project Setup and Configuration Management",
         "description": "Initialize the Flask application structure, set up configuration management, and establish the required directory structure for the application.",
         "status": "done",
@@ -14,7 +14,7 @@
         "updatedAt": "2025-11-19T16:57:21.843Z"
       },
       {
-        "id": "2",
+        "id": 2,
         "title": "File System Operations and Image Processing",
         "description": "Implement core file system operations including directory scanning, image detection, and file renaming functionality.",
         "status": "done",
@@ -92,7 +92,7 @@
         "updatedAt": "2025-11-20T19:44:36.513Z"
       },
       {
-        "id": "3",
+        "id": 3,
         "title": "Thumbnail Generation and Caching System",
         "description": "Implement an efficient thumbnail generation system with disk caching to support quick loading of large image collections.",
         "status": "done",
@@ -158,7 +158,7 @@
         "updatedAt": "2025-11-21T02:32:12.246Z"
       },
       {
-        "id": "4",
+        "id": 4,
         "title": "Tag Management System",
         "description": "Implement the tag management system for creating, storing, and retrieving tags that persist between sessions.",
         "status": "done",
@@ -226,7 +226,7 @@
         "updatedAt": "2025-11-20T20:46:33.364Z"
       },
       {
-        "id": "5",
+        "id": 5,
         "title": "Flask Routes and API Endpoints",
         "description": "Implement the Flask routes and API endpoints for the application's backend functionality.",
         "status": "done",
@@ -243,7 +243,7 @@
         "updatedAt": "2025-11-21T02:45:52.170Z"
       },
       {
-        "id": "6",
+        "id": 6,
         "title": "Frontend UI Structure and HTML Templates",
         "description": "Develop the HTML structure and templates for the user interface based on the mockup and PRD specifications.",
         "status": "done",
@@ -257,7 +257,7 @@
         "updatedAt": "2025-11-21T02:45:45.409Z"
       },
       {
-        "id": "7",
+        "id": 7,
         "title": "CSS Styling and Responsive Design",
         "description": "Implement the CSS styling for the application UI based on the mockup, with dark mode as the default theme.",
         "status": "done",
@@ -271,7 +271,7 @@
         "updatedAt": "2025-11-21T04:32:52.272Z"
       },
       {
-        "id": "8",
+        "id": 8,
         "title": "Research Automated Thumbnail Cache Invalidation Strategies",
         "description": "Research and propose improved strategies for thumbnail cache invalidation to enhance the current system, which now requires manual deletion in certain scenarios.",
         "details": "The task involves researching and proposing improved automated thumbnail cache invalidation mechanisms with the following considerations:\n\n1. Analyze the current implementation that uses file modification time for invalidation\n2. Identify scenarios where manual deletion is currently required and why automatic invalidation fails\n3. Research best practices for image thumbnail cache invalidation in similar applications\n4. Investigate potential solutions including:\n   - Content-based invalidation (using file hashes or checksums)\n   - Metadata-based invalidation strategies beyond modification time\n   - Event-driven invalidation triggered by specific application actions\n   - Scheduled garbage collection for orphaned thumbnails\n   - Database-backed cache index for better tracking\n5. Consider performance implications of each approach\n6. Evaluate memory usage and disk space requirements\n7. Analyze how the solution would integrate with the existing codebase\n8. Document potential edge cases and how they would be handled\n\nDeliverable: A comprehensive document outlining findings and recommending a specific approach with implementation guidelines.",
@@ -284,7 +284,7 @@
         "subtasks": []
       },
       {
-        "id": "9",
+        "id": 9,
         "title": "Implement Filename Parser for Tag Detection and Pattern Recognition",
         "description": "Design and implement a system that parses image filenames to detect known tags, prefixes, and suffixes, and pre-selects these elements in the UI when a user selects images with similar naming patterns.",
         "details": "Create a filename parsing system that analyzes selected image names to identify known tags and consistent patterns. The implementation should include:\n\n1. A utility function to parse filenames and split them by common separators (like '_', '-', ' '):\n```python\ndef parse_filename(filename):\n    # Strip extension\n    name_without_ext = os.path.splitext(filename)[0]\n    # Split by common separators\n    parts = re.split(r'[_\\-\\s]', name_without_ext)\n    return [part for part in parts if part]\n```\n\n2. A function to identify which parts of the filename match known tags:\n```python\ndef identify_tags_in_filename(parts, tag_manager):\n    known_tags = []\n    unknown_parts = []\n    all_tags = tag_manager.get_all_tags()\n    \n    for part in parts:\n        if part.lower() in [tag.lower() for tag in all_tags]:\n            known_tags.append(part)\n        else:\n            unknown_parts.append(part)\n    \n    return known_tags, unknown_parts\n```\n\n3. Logic to determine common patterns across multiple selected files:\n```python\ndef find_common_patterns(filenames, tag_manager):\n    if not filenames:\n        return [], []\n        \n    # Parse each filename\n    parsed_files = []\n    for filename in filenames:\n        parts = parse_filename(filename)\n        known_tags, unknown_parts = identify_tags_in_filename(parts, tag_manager)\n        parsed_files.append({\n            'filename': filename,\n            'known_tags': known_tags,\n            'unknown_parts': unknown_parts\n        })\n    \n    # Find common tags across all files\n    common_tags = set(parsed_files[0]['known_tags'])\n    for file_data in parsed_files[1:]:\n        common_tags.intersection_update(file_data['known_tags'])\n    \n    # Find common prefix/suffix patterns\n    common_prefix = []\n    if all(len(f['unknown_parts']) > 0 for f in parsed_files):\n        # Check if first parts match\n        first_parts = [f['unknown_parts'][0] for f in parsed_files]\n        if all(p == first_parts[0] for p in first_parts):\n            common_prefix.append(first_parts[0])\n    \n    return list(common_tags), common_prefix\n```\n\n4. API endpoint to provide pattern information:\n```python\n@app.route('/api/analyze_filenames', methods=['POST'])\ndef analyze_filenames():\n    data = request.json\n    selected_files = data.get('filenames', [])\n    \n    if not selected_files:\n        return jsonify({'error': 'No files selected'}), 400\n    \n    common_tags, common_prefix = find_common_patterns(selected_files, tag_manager)\n    \n    return jsonify({\n        'common_tags': common_tags,\n        'common_prefix': common_prefix\n    })\n```\n\n5. Frontend JavaScript to request and display the detected patterns:\n```javascript\nfunction analyzeSelectedFilenames() {\n    const selectedFiles = getSelectedFiles();\n    \n    if (selectedFiles.length === 0) return;\n    \n    fetch('/api/analyze_filenames', {\n        method: 'POST',\n        headers: {\n            'Content-Type': 'application/json'\n        },\n        body: JSON.stringify({ filenames: selectedFiles })\n    })\n    .then(response => response.json())\n    .then(data => {\n        // Pre-select detected tags\n        if (data.common_tags && data.common_tags.length > 0) {\n            preSelectTags(data.common_tags);\n        }\n        \n        // Pre-fill prefix field\n        if (data.common_prefix && data.common_prefix.length > 0) {\n            document.getElementById('prefix-field').value = data.common_prefix.join('_');\n        }\n    })\n    .catch(error => console.error('Error analyzing filenames:', error));\n}\n\n// Call this when files are selected\ndocument.getElementById('file-selection').addEventListener('change', analyzeSelectedFilenames);\n```\n\n6. Integrate this with the existing rename functionality to use the detected patterns when renaming files.",
@@ -300,7 +300,7 @@
         "updatedAt": "2025-11-22T18:24:47.934Z"
       },
       {
-        "id": "10",
+        "id": 10,
         "title": "Enhance Gallery Header with Sticky Behavior and Navigation Controls",
         "description": "Improve the gallery interface by implementing a sticky header that remains visible during scrolling, with toggle functionality to show/hide it, and quick navigation controls to jump to first/last images.",
         "details": "Implement the enhanced gallery header with the following components:\n\n1. Sticky Header Implementation:\n   - Modify the existing gallery header to remain fixed at the top of the viewport during scrolling\n   - Ensure smooth transition between normal and sticky states\n   - Add a subtle shadow or border to visually separate the sticky header when active\n\n2. Show/Hide Toggle:\n   - Add a toggle button in the corner of the header\n   - Implement smooth animation for collapsing/expanding the header\n   - Ensure that collapsed state preserves minimal navigation options\n   - Store user preference in localStorage\n\n```javascript\n// Sample toggle functionality\nconst headerToggle = document.getElementById('header-toggle');\nconst galleryHeader = document.getElementById('gallery-header');\n\nheaderToggle.addEventListener('click', () => {\n  galleryHeader.classList.toggle('collapsed');\n  // Store preference\n  localStorage.setItem('headerState', \n    galleryHeader.classList.contains('collapsed') ? 'collapsed' : 'expanded');\n});\n\n// Initialize based on saved preference\ndocument.addEventListener('DOMContentLoaded', () => {\n  const savedState = localStorage.getItem('headerState');\n  if (savedState === 'collapsed') {\n    galleryHeader.classList.add('collapsed');\n  }\n});\n```\n\n3. Jump-to Navigation Controls:\n   - Add \"Jump to First\" and \"Jump to Last\" buttons in the header\n   - Implement smooth scrolling to the respective positions\n   - Add visual indicators showing current position in the gallery (e.g., \"showing image 15 of 120\")\n\n```javascript\n// Sample jump navigation implementation\nconst jumpToFirst = document.getElementById('jump-first');\nconst jumpToLast = document.getElementById('jump-last');\nconst galleryContainer = document.querySelector('.gallery-container');\n\njumpToFirst.addEventListener('click', () => {\n  const firstImage = galleryContainer.querySelector('.thumbnail');\n  if (firstImage) {\n    firstImage.scrollIntoView({ behavior: 'smooth' });\n  }\n});\n\njumpToLast.addEventListener('click', () => {\n  const allImages = galleryContainer.querySelectorAll('.thumbnail');\n  const lastImage = allImages[allImages.length - 1];\n  if (lastImage) {\n    lastImage.scrollIntoView({ behavior: 'smooth' });\n  }\n});\n```\n\n4. CSS Styling Updates:\n```css\n.gallery-header {\n  position: sticky;\n  top: 0;\n  z-index: 100;\n  background-color: var(--panel-dark);\n  transition: height 0.3s ease, opacity 0.3s ease;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);\n  padding: 10px 15px;\n}\n\n.gallery-header.collapsed {\n  height: 40px;\n  overflow: hidden;\n}\n\n.header-toggle {\n  cursor: pointer;\n  position: absolute;\n  right: 10px;\n  top: 10px;\n}\n\n.jump-controls {\n  display: flex;\n  gap: 10px;\n}\n\n.jump-controls button {\n  background-color: var(--primary-color);\n  border: none;\n  padding: 5px 10px;\n  border-radius: 4px;\n  cursor: pointer;\n  color: white;\n}\n```",
@@ -315,7 +315,7 @@
         "updatedAt": "2025-11-22T18:10:45.989Z"
       },
       {
-        "id": "11",
+        "id": 11,
         "title": "Implement Image Search Filter with Partial String and Wildcard Support",
         "description": "Design and implement a search filter that allows users to quickly find images by entering partial filenames or using simple wildcards, improving file selection efficiency in the UI.",
         "details": "Create a search filter system with the following components:\n\n1. Frontend UI Implementation:\n   - Add a search input field in the gallery header with appropriate styling\n   - Include a clear button and search icon\n   - Implement real-time filtering as the user types\n   - Add a toggle for case sensitivity\n\n2. Wildcard Pattern Support:\n   - Implement support for * (matches any number of characters)\n   - Implement support for ? (matches exactly one character)\n   - Example: \"cat*.jpg\" would match \"category.jpg\" and \"catapult.jpg\"\n   - Example: \"image_???.png\" would match \"image_001.png\" but not \"image_1.png\"\n\n3. Pattern Matching Function:\n```javascript\nfunction matchesPattern(filename, pattern) {\n  // Convert wildcards to proper regex\n  const regexPattern = pattern\n    .replace(/\\./g, '\\\\.')\n    .replace(/\\*/g, '.*')\n    .replace(/\\?/g, '.');\n  const regex = new RegExp(`^${regexPattern}$`, 'i');\n  return regex.test(filename);\n}\n```\n\n4. Backend Support (if needed):\n   - Extend the existing API endpoints to accept search parameters\n   - Implement server-side filtering for large galleries where client-side filtering may impact performance\n\n5. Visual Feedback:\n   - Highlight matching parts of filenames in the UI\n   - Show count of matching images out of total\n   - Provide feedback when no images match the current pattern\n\n6. Performance Considerations:\n   - Implement debouncing to prevent excessive filtering on each keystroke\n   - Consider pagination or lazy loading for large result sets\n   - Optimize regex operations for better performance",
@@ -331,7 +331,7 @@
         "subtasks": []
       },
       {
-        "id": "12",
+        "id": 12,
         "title": "Implement Image Discard Workflow with Recycle Folder",
         "description": "Design and implement a discard workflow that moves selected images to a designated recycle folder instead of permanently deleting them, allowing for potential recovery of discarded files.",
         "details": "Implement a complete discard workflow with the following components:\n\n1. Recycle Folder Management:\n   - Create a dedicated 'Recycle' folder within the application's data directory\n   - Add configuration option for maximum size/age of files in recycle folder\n   - Implement logic to handle recycle folder exceeding size limits (FIFO deletion)\n\n2. UI Implementation:\n   - Add 'Move to Recycle' option in the context menu for images\n   - Implement keyboard shortcut (e.g., Shift+Delete) for discarding selected images\n   - Add confirmation dialog with option to remember choice\n   - Show subtle animation for discarding (fade-out effect)\n\n3. File Operations:\n   - Implement file moving operation that preserves original metadata\n   - Handle edge cases like duplicate filenames (append timestamp)\n   - Add error handling for permission issues or disk space problems\n   - Log all discard operations for audit purposes\n\n4. Optional Recovery Interface:\n   - Add a simple view to browse discarded images\n   - Implement 'Restore' functionality to move files back to their original location\n   - Add 'Empty Recycle Folder' option with confirmation dialog\n\n5. Status Indicators:\n   - Add a subtle UI indication showing the size/count of items in recycle folder\n   - Implement tooltips showing discard date and original location",
@@ -345,7 +345,7 @@
         "subtasks": []
       },
       {
-        "id": "13",
+        "id": 13,
         "title": "Implement Full-Size Image Viewer Modal",
         "description": "Enable on-demand viewing of full-size original images by implementing a modal dialog that opens when a thumbnail is double-clicked, ensuring only the requested image is loaded.",
         "details": "Implement a full-size image viewing system with the following components:\n\n1. User Interaction:\n   - Add double-click event listener to thumbnails in the grid view\n   - Optionally implement alternative methods (context menu \"View Original\", keyboard shortcut)\n   - Show loading indicator while the original image is being fetched\n\n2. Modal Implementation:\n   - Create a modal/dialog component that overlays the main application\n   - Include proper keyboard access (Esc to close)\n   - Add navigation controls for browsing to next/previous images without closing modal\n   - Implement image zoom controls (zoom in/out, fit to screen, actual size)\n\n3. Image Loading:\n   - Lazy-load only the specific image requested (no preloading of other originals)\n   - Handle large images efficiently to prevent excessive memory usage\n   - Support cancellation of loading if user closes the modal before loading completes\n   - Implement error handling for cases where the original image can't be loaded\n\n4. Performance Considerations:\n   - Use background worker or async loading to maintain UI responsiveness\n   - Consider implementing progressive loading for very large images\n   - Cache recently viewed full-size images in memory (with appropriate limits)\n   - Release memory when modal is closed\n\n5. UI Design:\n   - Add subtle animations for modal open/close\n   - Display image metadata (filename, dimensions, size) in the modal\n   - Ensure modal is responsive and works across different screen sizes",
@@ -361,7 +361,7 @@
         "updatedAt": "2025-11-22T20:46:49.341Z"
       },
       {
-        "id": "14",
+        "id": 14,
         "title": "Implement Click-and-Drag Marquee Selection for Thumbnails",
         "description": "Add support for selecting multiple thumbnails at once by clicking and dragging a selection box around them, improving efficiency for batch operations.",
         "details": "Implement a marquee selection system for the thumbnail gallery with the following components:\n\n1. Mouse Event Handling:\n   - Add mousedown event listener to initiate selection\n   - Add mousemove event listener to update selection area\n   - Add mouseup event listener to finalize selection\n   - Handle edge cases like selecting outside the gallery area\n   - Implement scrolling when selection extends beyond visible area\n\n2. Selection UI:\n   - Create a visible selection rectangle with semi-transparent background and border\n   - Implement smooth updating of the rectangle size/position as the mouse moves\n   - Add visual feedback for thumbnails that are within the selection area\n   - Use CSS transitions for smooth visual updates\n\n3. Selection Logic:\n   - Calculate intersection between selection rectangle and thumbnail elements\n   - Optimize performance for large galleries using efficient DOM querying\n   - Support multiple selection modes:\n     * Regular drag: Replace existing selection with new selection\n     * Shift+drag: Add to existing selection\n     * Ctrl/Cmd+drag: Toggle selection status of thumbnails\n   - Ensure compatibility with existing single-click selection\n\n4. Accessibility Considerations:\n   - Provide keyboard alternatives for selection operations\n   - Ensure screen reader compatibility\n   - Add appropriate ARIA attributes\n   - Support high contrast mode for selection rectangle\n\n5. Integration with Existing Systems:\n   - Update selected thumbnails state in application data model\n   - Ensure all operations that work on selected images function correctly with marquee selection\n   - Maintain selection state when gallery updates or refreshes\n<info added on 2025-11-22T18:23:40.289Z>\n6. Library Recommendation for Drag-and-Drop Reordering:\n   - Use Sortable.js for implementing drag-and-drop reordering functionality in the gallery\n   - Sortable.js benefits:\n     * Lightweight and compatible with vanilla JavaScript\n     * Well-supported for reordering lists/grids\n     * Good performance with large collections\n   - Integration considerations:\n     * Use Sortable.js for reordering functionality only (not for marquee selection)\n     * Ensure proper coordination between marquee selection state and Sortable.js interactions\n     * Implement proper event handling to prevent conflicts between selection and reordering operations\n     * Address accessibility requirements separately as no single library natively supports both drag-and-drop and accessible marquee selection\n   - Performance considerations:\n     * Initialize Sortable.js only when needed for reordering operations\n     * Ensure smooth transitions between selection and reordering modes\n</info added on 2025-11-22T18:23:40.289Z>",
@@ -376,7 +376,7 @@
         "subtasks": []
       },
       {
-        "id": "15",
+        "id": 15,
         "title": "Implement Drag-and-Drop Reordering of Thumbnails for Custom Processing Order",
         "description": "Enable users to reorder thumbnails by dragging and dropping them in the gallery view, allowing for custom processing order that reflects the user's desired sequence for batch operations.",
         "details": "Implement drag-and-drop functionality for thumbnails with the following components:\n\n1. Draggable Thumbnails:\n   - Make thumbnail elements draggable with proper visual feedback\n   - Add drag handle or indicator to show thumbnails can be reordered\n   - Implement proper cursor styling to indicate draggable elements\n   - Consider accessibility concerns with keyboard alternatives\n\n2. Drop Target and Visual Feedback:\n   - Create visual indicators for valid drop targets\n   - Implement preview of where the thumbnail will be placed during drag\n   - Add animations for smooth reordering visuals\n   - Ensure proper spacing adjustments during drag operations\n\n3. Order Management:\n   - Maintain an ordered list of image identifiers reflecting the current sequence\n   - Create a model for persisting custom order between sessions\n   - Implement API to retrieve images in the custom order for processing\n   - Provide methods to reset to default order (filename, date, etc.)\n\n4. Event Handling:\n   - Handle dragstart, dragover, dragenter, dragleave, and drop events\n   - Implement throttling for performance during rapid movements\n   - Handle edge cases like dragging outside the application window\n   - Support auto-scrolling when dragging near edges of the container\n\n5. Multi-item Dragging:\n   - Allow dragging multiple selected thumbnails as a group\n   - Maintain relative positions within the selection when dropping\n   - Integrate with existing selection mechanisms (including marquee selection)\n\n6. Technical Implementation:\n   - Use HTML5 Drag and Drop API\n   - Consider using a specialized library for complex drag behaviors\n   - Ensure compatibility across supported browsers\n   - Optimize performance for large galleries\n\n7. Order Persistence:\n   - Save the custom order to the application's configuration\n   - Ensure the order is respected in all processing operations\n   - Provide visual indication when a custom order is active",
@@ -390,6 +390,51 @@
         ],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 16,
+        "title": "Implement Keyboard Navigation for Full-Size Image Viewer",
+        "description": "Enhance the full-size image viewer modal to allow users to browse previous/next images using arrow keys, and add first/last image shortcuts using modifier keys like CMD/CTRL with arrows.",
+        "details": "Implement keyboard navigation for the full-size image viewer with the following components:\n\n1. Keyboard Navigation Implementation:\n   - Add event listeners for arrow key presses when the modal is open\n   - Left arrow key should display the previous image in the sequence\n   - Right arrow key should display the next image in the sequence\n   - Implement CMD+Left Arrow (macOS) or CTRL+Left Arrow (Windows/Linux) to jump to the first image\n   - Implement CMD+Right Arrow or CTRL+Right Arrow to jump to the last image\n   - Handle edge cases gracefully with appropriate visual feedback\n   - Consider focus management when modal is open to ensure keyboard events are captured\n\n2. UI Feedback:\n   - Add subtle visual indicators showing previous/next navigation availability\n   - Implement smooth transition animations between images\n   - Display keyboard shortcut hints in the interface (e.g., in a help tooltip or status bar)\n   - Show appropriate feedback when reaching the first or last image\n\n3. State Management:\n   - Track current position in the image sequence\n   - Preload adjacent images (at least one in each direction) for faster transitions\n   - Ensure navigation respects any custom ordering defined by the user\n   - Handle state updates efficiently to prevent performance issues during rapid navigation\n\n4. Optional Enhancements:\n   - Add on-screen navigation buttons for mouse users\n   - Consider swipe gestures for touch devices\n   - Implement a filmstrip view of nearby thumbnails for context\n   - Add a position indicator (e.g., \"3 of 25\")",
+        "testStrategy": "1. Functional Testing:\n   - Verify left/right arrow keys correctly navigate to previous/next images\n   - Test CMD+Left/Right Arrow (and CTRL+Left/Right Arrow) correctly jump to first/last images\n   - Confirm navigation works correctly at boundaries (first/last image)\n   - Test navigation with various keyboard layouts and across different platforms\n   - Verify navigation respects custom image ordering if implemented\n   - Test keyboard interactions when focus is in different areas of the modal\n\n2. UI/UX Testing:\n   - Verify transition animations are smooth and non-disruptive\n   - Check that visual indicators correctly show navigation possibilities\n   - Confirm appropriate feedback when reaching first/last image\n   - Assess the intuitiveness of the navigation experience\n\n3. Performance Testing:\n   - Test navigation responsiveness with galleries of varying sizes (10, 100, 500+ images)\n   - Verify preloading strategy works effectively for smooth transitions\n   - Monitor memory usage during extended navigation sessions\n\n4. Cross-browser Testing:\n   - Verify consistent behavior across Chrome, Firefox, Safari, and Edge\n   - Test on both desktop and mobile browsers where applicable",
+        "status": "pending",
+        "dependencies": [
+          13,
+          15
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 17,
+        "title": "Enhance Image Tagging System with Alphabetization and Improved Error Handling",
+        "description": "Improve the existing tagging functionality by implementing alphabetical sorting, adding clear error messages, fixing tag parsing issues, and introducing an override option for tag management.",
+        "details": "Implement enhancements to the image tagging system with the following components:\n\n1. Tag Alphabetization:\n   - Implement automatic alphabetical sorting of tags when:\n     a) Tags are initially loaded with an image\n     b) New tags are added to an image\n   - Ensure the alphabetization is case-insensitive\n   - Add smooth visual transition when tags are reordered\n\n2. Error Messaging Improvements:\n   - Identify all failure scenarios in the tag addition process\n   - Implement clear, user-friendly error messages for each failure case\n   - Display error messages prominently near the tag input field\n   - Add visual feedback (e.g., red highlight, warning icon) to indicate failed tag operations\n   - Implement temporary toast notifications for transient errors\n\n3. Tag Parsing Enhancement:\n   - Fix the issue where some prefix notation (`monochrome_transparent`) stops existing tag processing\n   - Implement robust parser that correctly handles:\n     a) Comma-separated tags\n     b) Tags with special characters\n     c) Tags with internal spaces\n     d) Prefix modifiers without breaking subsequent tag processing\n   - Add proper validation for tag format and content\n\n4. Tag Management Options:\n   - Implement an \"override\" checkbox near the tag input section\n   - When unchecked (default), new tags are added to existing ones\n   - When checked, all existing tags are replaced with the newly entered ones\n   - Add visual indicator showing the number of existing tags that would be preserved or replaced\n\n5. UI/UX Considerations:\n   - Ensure the tag input interface clearly indicates the current mode (add vs. override)\n   - Add tooltips explaining tag input behavior and syntax\n   - Implement visual differentiation between existing and newly added tags",
+        "testStrategy": "1. Alphabetization Testing:\n   - Verify tags load in alphabetical order when viewing an image with existing tags\n   - Test that newly added tags are inserted in the correct alphabetical position\n   - Test alphabetization with a mix of uppercase and lowercase tags\n   - Verify alphabetization works correctly with special characters and numbers\n\n2. Error Handling Testing:\n   - Test each error scenario to ensure appropriate error messages are displayed:\n     a) Adding duplicate tags\n     b) Adding invalid tag formats\n     c) Exceeding maximum number of tags (if applicable)\n     d) Network failures during tag operations\n   - Verify error messages are clearly visible and understandable\n   - Test that error states are properly cleared when corrective action is taken\n\n3. Tag Parsing Testing:\n   - Test parsing of various tag formats and combinations:\n     a) Simple comma-separated tags\n     b) Tags with spaces, special characters, and mixed case\n     c) Tags with prefix modifiers\n     d) Combinations of different tag formats\n   - Verify all tags are correctly identified and processed\n   - Test edge cases like empty input, only spaces, or very long tag strings\n\n4. Tag Management Testing:\n   - Verify that when \"override\" is unchecked, new tags are added to existing ones\n   - Test that when \"override\" is checked, existing tags are replaced\n   - Verify the UI correctly shows which mode is active\n   - Test switching between modes before submitting tags\n\n5. Integration Testing:\n   - Test tagging functionality in context of image selection and batch operations\n   - Verify tag changes persist when navigating between images\n   - Test tagging across different parts of the application",
+        "status": "pending",
+        "dependencies": [
+          10,
+          13
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 18,
+        "title": "Implement Persistent Change Tracking for Image Files",
+        "description": "Develop a system to track which image files have been modified across multiple sessions, with visual indicators in the UI to help users identify unchanged images.",
+        "details": "Implement a persistent change tracking system with the following components:\n\n1. Persistent Storage Mechanism:\n   - Create a local database or JSON file to store change history\n   - Store file paths with timestamps of last modification\n   - Implement proper file serialization/deserialization\n   - Handle edge cases like file moves or renames\n\n2. Change Detection Logic:\n   - Track meaningful changes (tag updates, file renames, etc.)\n   - Ignore trivial operations that don't constitute meaningful changes\n   - Create mechanisms to detect first-time loaded files vs. previously tracked files\n   - Implement checksums or other verification methods if necessary\n\n3. UI Integration:\n   - Add visual indicators to thumbnails (e.g., subtle border, badge, or overlay)\n   - Create a filtering option to show only changed or unchanged files\n   - Ensure indicators are visually distinct but not distracting\n   - Consider color-blind friendly visual indicators\n\n4. User Controls:\n   - Add option to manually mark files as 'unchanged'\n   - Implement a 'reset all change history' function\n   - Add option to exclude certain change types from tracking\n   - Consider time-based filtering (e.g., show changes in last X days)\n\n5. Performance Considerations:\n   - Ensure change tracking doesn't impact application performance\n   - Implement proper indexing for quick file status lookups\n   - Use efficient algorithms for change detection\n   - Consider bulk operations for folders with many images",
+        "testStrategy": "1. Persistence Testing:\n   - Verify change status persists after application restart\n   - Test change tracking across different directories\n   - Confirm behavior when files are moved or renamed\n   - Test application behavior when change history file is corrupted\n\n2. Change Detection Testing:\n   - Verify various operations correctly mark files as changed (tagging, renaming, etc.)\n   - Confirm read-only operations don't mark files as changed\n   - Test with various file types and formats\n   - Verify timestamp tracking accuracy\n\n3. UI Testing:\n   - Test visibility of changed/unchanged indicators in different view modes\n   - Verify filtering options correctly show only changed/unchanged files\n   - Test UI performance with large numbers of files\n   - Ensure indicators are accessible and meet contrast requirements\n\n4. User Control Testing:\n   - Verify manual marking of files works correctly\n   - Test reset functionality clears all history appropriately\n   - Confirm exclusion settings work as expected\n   - Test time-based filtering accuracy\n\n5. Integration Testing:\n   - Test compatibility with batch operations\n   - Verify compatibility with tagging system\n   - Confirm performance impact is negligible",
+        "status": "pending",
+        "dependencies": [
+          3,
+          6,
+          7,
+          13,
+          17
+        ],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
@@ -399,7 +444,10 @@
       "completedCount": 9,
       "tags": [
         "renamer"
-      ]
+      ],
+      "created": "2025-12-29T15:45:10.254Z",
+      "description": "Tasks for renamer context",
+      "updated": "2025-12-29T15:58:30.273Z"
     }
   }
 }
