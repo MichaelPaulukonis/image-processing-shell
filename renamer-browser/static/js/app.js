@@ -9,7 +9,7 @@
         selected: new Set(),
         tags: [],
         activeTags: new Set(),
-        multiSelect: false,
+        multiSelect: true,
         prefix: '',
         suffix: '',
         folderBrowser: {
@@ -504,14 +504,18 @@
     }
 
     function toggleSelection(path) {
+        const wasSelected = state.selected.has(path);
+        
         if (!state.multiSelect) {
             state.selected.clear();
         }
-        if (state.selected.has(path)) {
+
+        if (wasSelected) {
             state.selected.delete(path);
         } else {
             state.selected.add(path);
         }
+
         document.querySelectorAll('.image-card').forEach((card) => {
             const isSelected = state.selected.has(card.dataset.path);
             card.setAttribute('aria-pressed', isSelected);
