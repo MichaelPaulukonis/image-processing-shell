@@ -10,20 +10,20 @@ Some notes and scripts that attempted to force joins where joins should not be.
 
 ## renamer-browser
 
-browser-based app that that allows me to go through a directory of images and rename them with a series of tags. Basically, the filenames will server as meta-data.
+A local-first web application for organizing, tagging, and batch-renaming images. 
 
-### Usage
+**See [renamer-browser/README.md](renamer-browser/README.md) for full documentation.**
+
+### Quick Start
 
 ```shell
 cd renamer-browser
-
 source venv/bin/activate
-
 python app.py --debug [~/Pictures]
 ```
 
-Then open browser to `http://127.0.0.1:5000/`
+Open `http://127.0.0.1:5000/`
 
-### screenshot
+### Screenshot
 
 ![screenshot of renamer-browser showing thumbnails and rename option panel](./docs/screenshots/renamer-browser-screenshot-00.png)

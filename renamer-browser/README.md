@@ -1,152 +1,193 @@
 # Image Tagger & Renamer
 
-A locally-hosted web application for viewing, tagging, and batch-renaming image files for generative art workflows.
+**A local-first web application for efficient image organization, tagging, and batch renaming.**
 
-## Features
+Image Tagger & Renamer is a lightweight, Python-based tool designed for artists and power users who manage large local image collections. It provides a streamlined web-interface for browsing directories, applying reusable tags, and renaming files in bulk with consistent naming conventions.
 
-- Visual thumbnail-based interface for browsing images
-- Flexible tagging system with persistent tag library
-- Batch rename with prefix, tags (alphabetically sorted), suffix, and automatic numbering
-- Support for JPG, PNG, and JP2 image formats
-- Thumbnail caching for fast loading of large image collections
-- Dark mode interface
+![Application Screenshot](../docs/screenshots/renamer-browser-screenshot-00.png)
 
-## Requirements
+## Table of Contents
 
-- Python 3.10 or higher
-- Flask 2.3.3
-- Pillow 10.1.0
-- Modern web browser (Chrome, Firefox, Safari)
+1. [Getting Started](#getting-started)
+2. [Usage Documentation](#usage-documentation)
+3. [Features & Capabilities](#features--capabilities)
+4. [Configuration](#configuration)
+5. [Development Setup](#development-setup)
+6. [Project Structure](#project-structure)
+7. [Troubleshooting](#troubleshooting)
 
-## Installation
+---
 
-1. Clone or download this repository
+## Getting Started
 
-2. Create and activate a virtual environment:
+### Prerequisites
 
-   ```bash
-   # Create virtual environment
-   python -m venv venv
-   
-   # Activate on macOS/Linux
-   source venv/bin/activate
-   
-   # Activate on Windows
-   venv\Scripts\activate
-   ```
+* **Python 3.10+**
+* **pip** (Python package installer)
+* **Modern Web Browser** (Chrome, Firefox, Safari, Edge)
 
-3. Install dependencies:
+### Installation
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+1. **Navigate to the project directory:**
 
-## Usage
+    ```bash
+    cd renamer-browser
+    ```
 
-### Basic Usage
+2. **Create and activate a virtual environment:**
 
-Launch the application:
-```bash
-python app.py
-```
+    ```bash
+    # macOS/Linux
+    python3 -m venv venv
+    source venv/bin/activate
 
-Then open your browser to: http://127.0.0.1:5000
+    # Windows
+    python -m venv venv
+    .\venv\Scripts\activate
+    ```
 
-### Specify Initial Folder
+3. **Install dependencies:**
 
-Launch with a specific folder path:
-```bash
-python app.py /path/to/your/images
-```
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-### Command Line Options
+### Quick Start
+
+Run the application pointing to your image directory:
 
 ```bash
-python app.py [folder] [options]
-
-Positional arguments:
-  folder                Initial folder path to load images from
-
-Optional arguments:
-  --port PORT          Port to run the application on (default: 5000)
-  --host HOST          Host to run the application on (default: 127.0.0.1)
-  --debug              Run in debug mode
+python app.py ~/Pictures/generative-art
 ```
 
-### Examples
+Open your web browser and navigate to:
+`http://127.0.0.1:5000`
 
-```bash
-# Launch with default settings
-python app.py
+---
 
-# Launch with specific folder
-python app.py ~/Downloads/images
+## Usage Documentation
 
-# Launch on different port
-python app.py --port 8080
+### Core Workflow
 
-# Launch in debug mode
-python app.py --debug
+1. **Browse:** Use the "Change Folder" button to navigate your local filesystem and load a directory of images.
+2. **Select:** Click thumbnails to select images.
+    * **Multi-Select:** Enabled by default. Click multiple images to build a selection.
+    * **Range Select:** Hold `Shift` to select a range of images (feature dependent on browser/implementation).
+    * **Toggle:** Click a selected image to deselect it.
+3. **Tag:**
+    * **Apply Tags:** Click existing tags in the "Tags" panel to toggle them for all selected images.
+    * **Create Tags:** Click "+ Add New Tag" to create persistent tags.
+4. **Rename:**
+    * Enter a **Prefix** (optional).
+    * Enter a **Suffix** (optional).
+    * The **Filename Preview** updates automatically: `[prefix]_[tag1]_[tag2]_[suffix]_[000].ext`
+    * Click **Rename Selected Images** to commit changes.
 
-# Combine options
-python app.py ~/Pictures/generative-art --port 8080 --debug
-```
+### Keyboard Shortcuts
+
+| Key | Context | Action |
+| --- | --- | --- |
+| `Enter` | Thumbnail | Toggle selection |
+| `Double Click` | Thumbnail | Open full-size preview modal |
+| `Escape` | Preview Modal | Close modal |
+| `Arrow Left` | Preview Modal | Navigate to previous image |
+| `Arrow Right` | Preview Modal | Navigate to next image |
+| `Cmd/Ctrl` + `Left` | Preview Modal | Jump to first image |
+| `Cmd/Ctrl` + `Right` | Preview Modal | Jump to last image |
+| `Space` | Preview Modal | Toggle selection of current image |
+
+---
+
+## Features & Capabilities
+
+* **Local-First Architecture:** Runs entirely on your machine; no images are uploaded to the cloud.
+* **Visual File Management:** Browse directories with a responsive thumbnail grid.
+* **Smart Caching:** Thumbnails are generated once and cached locally for performance.
+* **Batch Renaming:** deterministic renaming engine that handles numbering and duplicates automatically.
+* **Tag Management:** Persistent tag library that allows for consistent naming across sessions.
+* **Image Preview:** High(er)-resolution modal viewer with keyboard navigation and selection toggling.
+* **Filename Parsing:** Analyzes existing filenames to pre-fill tags and patterns when possible.
+
+---
 
 ## Configuration
 
-Configuration files are stored in `~/.image-tagger-renamer/`:
+The application stores user configuration and persistent data in your home directory:
 
-- `config.json` - Application settings
-- `tags.json` - Tag library (persists between sessions)
-- `app.log` - Application logs
-- `cache/thumbnails/` - Cached thumbnails
+* **Config Directory:** `~/.image-tagger-renamer/`
+* **Configuration File:** `~/.image-tagger-renamer/config.json` (Stores last directory, preferences)
+* **Tags Database:** `~/.image-tagger-renamer/tags.json`
+* **Thumbnail Cache:** `~/.image-tagger-renamer/cache/thumbnails/`
 
-## Workflow
+You generally do not need to edit these files manually.
 
-1. Launch the application and select a folder
-2. Browse thumbnails in the grid view
-3. Select images (single or multi-select mode)
-4. Enter optional prefix/suffix
-5. Select tags from the library or add new ones
-6. Preview the resulting filename
-7. Click "Rename Selected Images"
+---
 
-## Filename Format
+## Development Setup
 
-Renamed files follow this format:
-```
-[prefix]_[tag1]_[tag2]_[tagN]_[suffix]_[000].ext
+### Running in Debug Mode
+
+For development, run the Flask app with debug mode enabled to support auto-reloading:
+
+```bash
+python app.py --debug
 ```
 
-- Tags are sorted alphabetically (not in UI selection order)
-- Numbering starts at 000 for duplicates
-- Original filename is completely replaced
-- File extension is preserved
+### Running Tests
 
-## Development Status
+The project includes a `unittest` suite covering core logic (file management, tagging, routes).
 
-**Current Version:** MVP Development (v1.0.0)
+```bash
+# Run all tests
+python -m unittest discover tests
 
-This is an actively developed MVP. Core features are being implemented following the PRD specifications.
+# Run specific test file
+python -m unittest tests.test_filename_parser
+```
 
-## License
+### Key Libraries
 
-MIT License - See LICENSE file for details
+* **Flask:** Web framework.
+* **Pillow (PIL):** Image processing and thumbnail generation.
+* **Werkzeug:** WSGI utilities.
+
+---
+
+## Project Structure
+
+```text
+renamer-browser/
+├── app.py                 # Application entry point and CLI argument parser
+├── config.py              # Configuration management (paths, logging)
+├── requirements.txt       # Python dependencies
+├── models/                # Core business logic
+│   ├── file_manager.py    # Filesystem operations (scanning, renaming)
+│   ├── tag_manager.py     # JSON-based tag persistence
+│   ├── thumbnail_manager.py # Image processing and caching
+│   └── filename_parser.py # Logic for parsing existing filenames
+├── routes/
+│   └── main.py            # Flask API endpoints and view routes
+├── static/
+│   ├── css/               # Application styling (Dark mode default)
+│   └── js/                # Client-side logic (Vanilla JS)
+├── templates/
+│   ├── index.html         # Main application view
+│   └── image-preview-modal.html # Modal component
+└── tests/                 # Unit tests
+```
+
+---
 
 ## Troubleshooting
 
-**Application won't start:**
-- Ensure Python 3.10+ is installed: `python --version`
-- Verify dependencies are installed: `pip install -r requirements.txt`
-- Check if port 5000 is available or use `--port` option
+### Common Issues
 
-**Images not loading:**
-- Verify folder path is correct and accessible
-- Check supported formats: JPG, PNG, JP2
-- Review logs in `~/.image-tagger-renamer/app.log`
+**Thumbnails not showing?**
+The cache might be stale or corrupted. You can safely delete the cache directory to force regeneration:
+`rm -rf ~/.image-tagger-renamer/cache/thumbnails/`
 
-**Permission errors:**
-- Ensure read/write access to the selected folder
-- Check permissions on `~/.image-tagger-renamer/` directory
+**"Image not found" in preview?**
+Ensure the application has read permissions for the directory you are browsing.
 
-For more help, check the logs or open an issue on GitHub.
+**Rename fails?**
+Check the application logs (printed to console) for details. Common causes include file permission errors or trying to rename a file to a name that already exists (though the system attempts to auto-increment counters).
