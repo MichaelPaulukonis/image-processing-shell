@@ -436,6 +436,21 @@
         ],
         "priority": "medium",
         "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "Add On-Screen Help Documentation with External Links",
+        "description": "Implement an on-screen help system that provides users with application usage guidance and includes links to the repository and michaelpaulukonis.github.io website.",
+        "details": "Implement an on-screen help system with the following components:\n\n1. Help UI Component Development:\n   - Create a dedicated help button/icon in the application header or menu\n   - Design a modal or panel to display help content when activated\n   - Ensure the help UI is responsive and works on different screen sizes\n   - Implement a clean, organized layout for displaying help information\n\n2. Help Content Creation:\n   - Create clear, concise documentation covering main application features\n   - Include sections for:\n     - Getting started\n     - Basic operations\n     - Advanced features\n     - Keyboard shortcuts\n     - Troubleshooting\n   - Use appropriate formatting (headings, lists, emphasis) for readability\n\n3. External Links Integration:\n   - Add prominent links to:\n     - The project's GitHub repository\n     - The michaelpaulukonis.github.io website\n   - Implement proper external link handling with:\n     - Visual indicators that links open in a new tab\n     - Proper security attributes (rel=\"noopener noreferrer\")\n   - Consider adding brief descriptions of what users will find at each link\n\n4. Help System Accessibility:\n   - Ensure all help content is accessible using keyboard navigation\n   - Add proper ARIA attributes for screen reader compatibility\n   - Test with assistive technologies to confirm usability\n   - Implement proper focus management within the help system",
+        "testStrategy": "1. Functional Testing:\n   - Verify the help button/icon is visible and activates the help UI when clicked\n   - Test all sections of help documentation display properly\n   - Confirm external links open correctly in new tabs\n   - Test keyboard navigation through the help content\n   - Verify the help UI can be closed properly\n\n2. Content Testing:\n   - Review help documentation for accuracy and completeness\n   - Verify all feature descriptions match actual application behavior\n   - Check for grammatical errors and clarity\n   - Ensure external links point to correct URLs\n\n3. Accessibility Testing:\n   - Test keyboard navigation through the entire help system\n   - Verify screen readers can access all help content\n   - Check contrast ratios for text readability\n   - Ensure focus indicators are visible throughout the help interface\n\n4. Cross-Browser/Device Testing:\n   - Test help system on different browsers (Chrome, Firefox, Safari, Edge)\n   - Verify functionality on different devices (desktop, tablet, mobile)\n   - Check responsiveness of help UI at different screen sizes",
+        "status": "pending",
+        "dependencies": [
+          3,
+          6,
+          7
+        ],
+        "priority": "medium",
+        "subtasks": []
       }
     ],
     "metadata": {
@@ -448,7 +463,7 @@
       ],
       "created": "2025-12-29T15:45:10.254Z",
       "description": "Tasks for renamer context",
-      "updated": "2025-12-29T15:58:30.273Z"
+      "updated": "2025-12-29T16:14:20.424Z"
     }
   }
 }

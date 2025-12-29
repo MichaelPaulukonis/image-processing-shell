@@ -331,6 +331,7 @@
     const previewFilesize = document.getElementById('preview-filesize');
     const previewDimensions = document.getElementById('preview-dimensions');
     const closeImagePreview = document.getElementById('close-image-preview');
+    const previewSelectCheckbox = document.getElementById('preview-select-checkbox');
 
     function openImagePreview(image) {
         if (!imagePreviewModal) return;
@@ -350,6 +351,11 @@
         } else {
             previewDimensions.textContent = '';
         }
+
+        if (previewSelectCheckbox) {
+            previewSelectCheckbox.checked = state.selected.has(image.path);
+        }
+
         // Set white background for transparent images
         previewImage.style.background = '#fff';
         // Constrain image size to fit modal
@@ -386,6 +392,29 @@
         closeImagePreview.addEventListener('click', closeImagePreviewModal);
     }
 
+    function togglePreviewSelection() {
+        if (state.currentImageIndex === -1) return;
+        const image = state.images[state.currentImageIndex];
+        toggleSelection(image.path);
+        if (previewSelectCheckbox) {
+            previewSelectCheckbox.checked = state.selected.has(image.path);
+        }
+    }
+
+    if (previewSelectCheckbox) {
+        previewSelectCheckbox.addEventListener('change', () => {
+            // We only need to trigger the selection logic, 
+            // the visual state of checkbox is already changed by user click.
+            // But toggleSelection toggles the state, so we need to ensure sync.
+            // Actually calling togglePreviewSelection works because:
+            // 1. User clicks -> checkbox checked=true
+            // 2. Event fires -> togglePreviewSelection
+            // 3. toggleSelection -> adds to Set
+            // 4. togglePreviewSelection sets checkbox.checked = true (matches)
+            togglePreviewSelection();
+        });
+    }
+
     function navigatePreview(action) {
         if (state.currentImageIndex === -1 || !state.images.length) return;
         
@@ -419,6 +448,9 @@
 
         if (event.key === 'Escape') {
             closeImagePreviewModal();
+        } else if (event.key === ' ') {
+            event.preventDefault(); // Prevent scrolling
+            togglePreviewSelection();
         } else if (event.key === 'ArrowLeft') {
             if (event.metaKey || event.ctrlKey) {
                 navigatePreview('first');
