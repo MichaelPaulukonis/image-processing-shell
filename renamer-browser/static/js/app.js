@@ -5,6 +5,7 @@
     const state = {
         directory: null,
         images: [],
+        currentImageIndex: -1,
         selected: new Set(),
         tags: [],
         activeTags: new Set(),
@@ -333,6 +334,10 @@
 
     function openImagePreview(image) {
         if (!imagePreviewModal) return;
+        
+        // Update state index
+        state.currentImageIndex = state.images.findIndex(img => img.path === image.path);
+
         // Use /api/preview-image?path=<path> route for preview
         // Send the full path (encoded) so the backend can resolve it absolutely
         const encodedPath = encodeURIComponent(image.path);
@@ -373,15 +378,59 @@
         if (imagePreviewModal) {
             imagePreviewModal.classList.add('hidden');
             previewImage.src = '';
+            state.currentImageIndex = -1;
         }
     }
 
     if (closeImagePreview) {
         closeImagePreview.addEventListener('click', closeImagePreviewModal);
     }
+
+    function navigatePreview(action) {
+        if (state.currentImageIndex === -1 || !state.images.length) return;
+        
+        let newIndex = state.currentImageIndex;
+        const maxIndex = state.images.length - 1;
+
+        switch (action) {
+            case 'prev':
+                newIndex = Math.max(0, state.currentImageIndex - 1);
+                break;
+            case 'next':
+                newIndex = Math.min(maxIndex, state.currentImageIndex + 1);
+                break;
+            case 'first':
+                newIndex = 0;
+                break;
+            case 'last':
+                newIndex = maxIndex;
+                break;
+        }
+
+        if (newIndex !== state.currentImageIndex) {
+            openImagePreview(state.images[newIndex]);
+        }
+    }
+
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && imagePreviewModal && !imagePreviewModal.classList.contains('hidden')) {
+        const isModalOpen = imagePreviewModal && !imagePreviewModal.classList.contains('hidden');
+        
+        if (!isModalOpen) return;
+
+        if (event.key === 'Escape') {
             closeImagePreviewModal();
+        } else if (event.key === 'ArrowLeft') {
+            if (event.metaKey || event.ctrlKey) {
+                navigatePreview('first');
+            } else {
+                navigatePreview('prev');
+            }
+        } else if (event.key === 'ArrowRight') {
+            if (event.metaKey || event.ctrlKey) {
+                navigatePreview('last');
+            } else {
+                navigatePreview('next');
+            }
         }
     });
 

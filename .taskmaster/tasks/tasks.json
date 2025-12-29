@@ -397,13 +397,14 @@
         "description": "Enhance the full-size image viewer modal to allow users to browse previous/next images using arrow keys, and add first/last image shortcuts using modifier keys like CMD/CTRL with arrows.",
         "details": "Implement keyboard navigation for the full-size image viewer with the following components:\n\n1. Keyboard Navigation Implementation:\n   - Add event listeners for arrow key presses when the modal is open\n   - Left arrow key should display the previous image in the sequence\n   - Right arrow key should display the next image in the sequence\n   - Implement CMD+Left Arrow (macOS) or CTRL+Left Arrow (Windows/Linux) to jump to the first image\n   - Implement CMD+Right Arrow or CTRL+Right Arrow to jump to the last image\n   - Handle edge cases gracefully with appropriate visual feedback\n   - Consider focus management when modal is open to ensure keyboard events are captured\n\n2. UI Feedback:\n   - Add subtle visual indicators showing previous/next navigation availability\n   - Implement smooth transition animations between images\n   - Display keyboard shortcut hints in the interface (e.g., in a help tooltip or status bar)\n   - Show appropriate feedback when reaching the first or last image\n\n3. State Management:\n   - Track current position in the image sequence\n   - Preload adjacent images (at least one in each direction) for faster transitions\n   - Ensure navigation respects any custom ordering defined by the user\n   - Handle state updates efficiently to prevent performance issues during rapid navigation\n\n4. Optional Enhancements:\n   - Add on-screen navigation buttons for mouse users\n   - Consider swipe gestures for touch devices\n   - Implement a filmstrip view of nearby thumbnails for context\n   - Add a position indicator (e.g., \"3 of 25\")",
         "testStrategy": "1. Functional Testing:\n   - Verify left/right arrow keys correctly navigate to previous/next images\n   - Test CMD+Left/Right Arrow (and CTRL+Left/Right Arrow) correctly jump to first/last images\n   - Confirm navigation works correctly at boundaries (first/last image)\n   - Test navigation with various keyboard layouts and across different platforms\n   - Verify navigation respects custom image ordering if implemented\n   - Test keyboard interactions when focus is in different areas of the modal\n\n2. UI/UX Testing:\n   - Verify transition animations are smooth and non-disruptive\n   - Check that visual indicators correctly show navigation possibilities\n   - Confirm appropriate feedback when reaching first/last image\n   - Assess the intuitiveness of the navigation experience\n\n3. Performance Testing:\n   - Test navigation responsiveness with galleries of varying sizes (10, 100, 500+ images)\n   - Verify preloading strategy works effectively for smooth transitions\n   - Monitor memory usage during extended navigation sessions\n\n4. Cross-browser Testing:\n   - Verify consistent behavior across Chrome, Firefox, Safari, and Edge\n   - Test on both desktop and mobile browsers where applicable",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           13,
           15
         ],
         "priority": "medium",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2025-12-29T16:15:00.000Z"
       },
       {
         "id": 17,
