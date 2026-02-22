@@ -2,6 +2,12 @@
 
 A couple of random scripts I use often
 
+## tool.sh
+
+CLI utility for batch image-processing operations (video, montage, slicing, resizing).
+
+**See [docs/tool-sh/README.md](docs/tool-sh/README.md) for full documentation.**
+
 See `docs/notes.md` for random notes on command-line usage etc.
 
 ## panorama

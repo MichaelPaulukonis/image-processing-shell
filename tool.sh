@@ -233,15 +233,15 @@ fi
 # --- Assign Params ---
 TARGET_FOLDER="${target_folder[2]}"
 DESTINATION_FOLDER="${destination_folder[2]}"
-FPS="${fps[2]}"
-GRIDSIZE="${gridsize[2]}"
+FPS="${fps[2]:-$FPS}"
+GRIDSIZE="${gridsize[2]:-$GRIDSIZE}"
 HELP="${help}"
 MONTAGE="${montage}"
 OUTPUT_NAME="${output_name[2]}"
-PREFIX="${prefix[2]}"
+PREFIX="${prefix[2]:-$PREFIX}"
 RESIZE="${resize}"
 SLICE="${slice}"
-SUFFIX="${suffix[2]}"
+SUFFIX="${suffix[2]:-$SUFFIX}"
 VIDEO="${video}"
 
 
