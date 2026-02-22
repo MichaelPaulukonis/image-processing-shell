@@ -76,7 +76,7 @@ makevideo() {
         echo "$COMMAND"
     fi
 
-    # eval "$COMMAND"
+    eval "$COMMAND"
 }
 
 # create multiple videos with different FPS values
