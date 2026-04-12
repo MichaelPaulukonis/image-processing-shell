@@ -1,0 +1,33 @@
+{
+  "cwd": "/Users/michaelpaulukonis/projects/image-processing",
+  "entrypoint": "cli",
+  "gitBranch": "pano",
+  "isSidechain": false,
+  "message": {
+    "content": [
+      {
+        "content": "File created successfully at: /Users/michaelpaulukonis/.claude/projects/-Users-michaelpaulukonis-projects-image-processing/memory/MEMORY.md",
+        "tool_use_id": "toolu_01MK7tm444QL23nKyiPYULxh",
+        "type": "tool_result"
+      }
+    ],
+    "role": "user"
+  },
+  "parentUuid": "e4702066-cb01-43ce-b905-4c81cf6a3376",
+  "promptId": "d3120730-0542-496f-8593-533a1d89ded1",
+  "sessionId": "00d045ef-0311-40b7-b34e-71f99f83ffbb",
+  "slug": "synthetic-churning-lecun",
+  "sourceToolAssistantUUID": "e4702066-cb01-43ce-b905-4c81cf6a3376",
+  "timestamp": "2026-04-12T17:33:14.335Z",
+  "toolUseResult": {
+    "content": "# Memory Index\n\n- [Woodcut extraction false-positive preference](feedback_extraction_tradeoffs.md) — prefer over-capture over splitting thematic images; false positives are easy to trim in post-processing\n",
+    "filePath": "/Users/michaelpaulukonis/.claude/projects/-Users-michaelpaulukonis-projects-image-processing/memory/MEMORY.md",
+    "originalFile": null,
+    "structuredPatch": [],
+    "type": "create"
+  },
+  "type": "user",
+  "userType": "external",
+  "uuid": "e41be9d0-0378-479d-bc39-fb1aab9ecb55",
+  "version": "2.1.87"
+}

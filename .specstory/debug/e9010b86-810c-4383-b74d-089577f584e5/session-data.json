@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "provider": {
+    "id": "copilotide",
+    "name": "copilotide",
+    "version": "1.0"
+  },
+  "sessionId": "e9010b86-810c-4383-b74d-089577f584e5",
+  "createdAt": "2025-01-01T23:21:25-05:00",
+  "updatedAt": "2025-01-01T23:25:38-05:00",
+  "slug": "capturing-parameters-before-taking-actions-in-toolsh",
+  "workspaceRoot": "/Users/michaelpaulukonis/projects/image-processing",
+  "exchanges": [
+    {
+      "exchangeId": "request_0a25ea0c-a2b7-4fe5-8fae-cf017b30ae50",
+      "startTime": "1969-12-31T18:59:59-05:00",
+      "messages": [
+        {
+          "timestamp": "1969-12-31T18:59:59-05:00",
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "I need to fix tool.sh, so that all parameters are captured before actions are taken"
+            }
+          ]
+        },
+        {
+          "role": "agent",
+          "content": [
+            {
+              "type": "text",
+              "text": "### Plan\n\n1. Create a loop to capture all parameters and store them in variables.\n2. After the loop, perform the actions based on the captured parameters.\n\n### Code\n\n```shellscript\ndebug() {\n    echo TARG: $TARG\n    echo DEST: $DEST\n    echo NAME: $NAME\n    echo ROOT: $ROOT\n    echo PREFIX: $PREFIX\n    echo SUFFIX: $SUFFIX\n}\n\n## MAIN\n\n## Capture all parameters\nwhile [ \"$1\" != \"\" ]; do\n    case $1 in\n        -s | --suffix )\n            shift\n            SUFFIX=$1\n        ;;\n        -p | --prefix )\n            shift\n            PREFIX=$1\n        ;;\n        -t | --target )\n            shift\n            TARG=$1\n        ;;\n        -d | --destination )\n            shift\n            DEST=$1\n        ;;\n        -n | --name )\n            shift\n            NAME=$1\n        ;;\n        -r | --root )\n            shift\n            ROOT=$1\n        ;;\n        *)\n            echo \"Invalid option: $1\"\n            exit 1\n        ;;\n    esac\n    shift\ndone\n\n## Perform actions based on captured parameters\n# Example action\nif [ -n \"$SUFFIX\" ]; then\n    echo \"Performing action with SUFFIX: $SUFFIX\"\nfi\n\nif [ -n \"$PREFIX\" ]; then\n    echo \"Performing action with PREFIX: $PREFIX\"\nfi\n\n# Add more actions as needed\n```\n\nThis code captures all parameters first and then performs actions based on the captured parameters. Adjust the actions as needed for your specific use case."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "exchangeId": "request_a21a25af-e8e1-4efd-9901-4d1960b66bbf",
+      "startTime": "1969-12-31T18:59:59-05:00",
+      "messages": [
+        {
+          "timestamp": "1969-12-31T18:59:59-05:00",
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "There are command-line actions like \"--video\" or \"--montage\" that should only start AFTER all parameters have been captured. Can you make this work?"
+            }
+          ]
+        },
+        {
+          "role": "agent",
+          "content": [
+            {
+              "type": "text",
+              "text": "### Plan\n\n1. Capture all parameters first.\n2. After capturing all parameters, perform the actions based on the captured parameters.\n\n### Code\n\n```shellscript\n## MAIN\n\n## Capture all parameters\nwhile [ \"$1\" != \"\" ]; do\n    case $1 in\n        -g | --gridSize )\n            shift\n            GRIDSIZE=$1\n        ;;\n        -f | --fps )\n            shift\n            FPS=$1\n        ;;\n        -r | --resolution )\n            shift\n            RESOLUTION=$1\n        ;;\n        -v | --video )\n            ACTION=\"video\"\n        ;;\n        -m | --montage )\n            ACTION=\"montage\"\n        ;;\n        -w | --slice )\n            ACTION=\"slice\"\n        ;;\n        -w | --wombo )\n            ACTION=\"wombo\"\n        ;;\n        -t | --target )\n            shift\n            TARGET=$1\n        ;;\n        -d | --destination )\n            shift\n            DESTINATION=$1\n        ;;\n        -n | --name )\n            shift\n            NAME=$1\n        ;;\n        -p | --prefix )\n            shift\n            PREFIX=$1\n        ;;\n        *)\n            echo \"Invalid option: $1\"\n            exit 1\n        ;;\n    esac\n    shift\ndone\n\n## Perform actions based on captured parameters\ncase $ACTION in\n    video)\n        makevideos $TARGET $DESTINATION $NAME\n    ;;\n    montage)\n        makeMontage $TARGET $DESTINATION $NAME\n    ;;\n    slice)\n        sliceGrid $TARGET $DESTINATION $PREFIX\n    ;;\n    wombo)\n        sliceWombo $TARGET $DESTINATION $PREFIX\n    ;;\n    *)\n        echo \"No valid action specified\"\n        exit 1\n    ;;\nesac\n```\n\nThis code captures all parameters first and then performs the actions based on the captured parameters. Adjust the actions as needed for your specific use case."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

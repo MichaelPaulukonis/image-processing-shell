@@ -1,0 +1,49 @@
+{
+  "agentId": "aside_question-219e4e82c10e103f",
+  "cwd": "/Users/michaelpaulukonis/projects/image-processing",
+  "entrypoint": "cli",
+  "gitBranch": "pano",
+  "isSidechain": true,
+  "message": {
+    "content": [
+      {
+        "text": "Two fixes applied:\n\n1. **Regularity filter** (`--max-regularity 0.25` default) — rejects blobs whose inter-line gap pattern looks text-like. Your data showed a clean break: woodcuts ≤ 0.143, false positives ≥ 0.307.\n\n2. **Gap calculation fix** — boxes that overlap in Y but are far apart in X (e.g., 358px) no longer register as gap=0. The rule is now: use the gap of the *separating* axis, or `max(h_gap, v_gap)` when separated diagonally.\n\nRun with `--debug` again and the score table will now show `regularity X.XXX` as the reject reason for the text-only blobs, and the merge should produce individual woodcuts rather than one giant blob.",
+        "type": "text"
+      }
+    ],
+    "id": "msg_012RVweBT8giH7mtHhz9S95x",
+    "model": "claude-sonnet-4-6",
+    "role": "assistant",
+    "stop_details": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "type": "message",
+    "usage": {
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 247,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "cache_creation_input_tokens": 247,
+      "cache_read_input_tokens": 68950,
+      "inference_geo": "",
+      "input_tokens": 1,
+      "iterations": [],
+      "output_tokens": 196,
+      "server_tool_use": {
+        "web_fetch_requests": 0,
+        "web_search_requests": 0
+      },
+      "service_tier": "standard",
+      "speed": "standard"
+    }
+  },
+  "parentUuid": "c7e5a392-9244-4004-8d73-37acdbf3d1c9",
+  "requestId": "req_011CZsDPwXRRidHj59nGSmps",
+  "sessionId": "00d045ef-0311-40b7-b34e-71f99f83ffbb",
+  "slug": "synthetic-churning-lecun",
+  "timestamp": "2026-04-09T00:01:00.901Z",
+  "type": "assistant",
+  "userType": "external",
+  "uuid": "a9b6771a-aa71-4374-b298-e917ee9eac66",
+  "version": "2.1.87"
+}

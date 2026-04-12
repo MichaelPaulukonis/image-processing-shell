@@ -1,0 +1,33 @@
+{
+  "cwd": "/Users/michaelpaulukonis/projects/image-processing",
+  "entrypoint": "cli",
+  "gitBranch": "pano",
+  "isSidechain": false,
+  "message": {
+    "content": [
+      {
+        "content": "File created successfully at: /Users/michaelpaulukonis/projects/image-processing/memory/feedback_extraction_tradeoffs.md",
+        "tool_use_id": "toolu_01XkTxbTVg7Ucm4yDXoeTruT",
+        "type": "tool_result"
+      }
+    ],
+    "role": "user"
+  },
+  "parentUuid": "6a7f0b14-9bb3-4b8f-9f50-fa96f315b28f",
+  "promptId": "d3120730-0542-496f-8593-533a1d89ded1",
+  "sessionId": "00d045ef-0311-40b7-b34e-71f99f83ffbb",
+  "slug": "synthetic-churning-lecun",
+  "sourceToolAssistantUUID": "6a7f0b14-9bb3-4b8f-9f50-fa96f315b28f",
+  "timestamp": "2026-04-12T17:33:05.885Z",
+  "toolUseResult": {
+    "content": "---\nname: Woodcut extraction false-positive preference\ndescription: User prefers over-capture (false positives, border bits, extra text) over splitting thematic images apart\ntype: feedback\n---\n\nWhen tuning image extraction from historical book pages, always prefer over-capture over under-capture.\n\n**Why:** The user does post-processing on all extracted images — discarding false positives or trimming excess is easy. Merging two separately-extracted pieces of the same illustration is much harder.\n\n**How to apply:** When there is a tension between:\n- a filter that would remove false positives but risk splitting a real image, OR\n- a looser threshold that keeps false positives but ensures thematic unity\n\n→ always choose the looser threshold. Text-only crops, border fragments, and extra whitespace are all acceptable false positives.\n",
+    "filePath": "/Users/michaelpaulukonis/projects/image-processing/memory/feedback_extraction_tradeoffs.md",
+    "originalFile": null,
+    "structuredPatch": [],
+    "type": "create"
+  },
+  "type": "user",
+  "userType": "external",
+  "uuid": "82af3434-6be1-403a-8096-7289dfa99c61",
+  "version": "2.1.87"
+}

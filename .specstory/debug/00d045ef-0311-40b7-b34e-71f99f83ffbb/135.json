@@ -1,0 +1,20 @@
+{
+  "cwd": "/Users/michaelpaulukonis/projects/image-processing",
+  "entrypoint": "cli",
+  "gitBranch": "pano",
+  "isSidechain": false,
+  "message": {
+    "content": "To be clear - I am more okay with false positives like text-only or portions of the border than I am with thematic-images kept apart. I will be doing post-processing on all of these images, and discarding false positives or trimming excess capture is much easier than merging separated pieces. These are perfect, with the exception of the first image (`00`) that captures the target image PLUS part of the border and some random text. I can easily trim that when processing, and the other 3 images are perfect. \n\nndidate height: 60px)\n  Illustration zones: 3\n    Zone 1: rows 284–577 (293px)\n    Zone 2: rows 599–3432 (2833px)\n    Zone 3: rows 3494–3850 (356px)\n  [DEBUG] Saved threshold, blobs, and zones images\n  Found 507 raw contours\n  Area filter: 47,740–3,341,818 px  (0.5%–35.0%)\n  Found 8 candidate regions\n\n    #       pos (x,y)    size (w×h)   density   h/txt   regularity\n  ---  --------------  ------------  --------  ------  -----------\n    0  (  337, 2739)     1738×671       0.298    33.5×        0.031\n    1  (  348, 2344)     1102×549       0.281    27.4×        0.055\n    2  ( 1292, 2339)      764×491       0.316    24.6×        0.043\n    3  (  957, 1705)      385×275       0.260    13.8×        0.095\n    4  (  566, 1695)      385×279       0.237    13.9×        0.097\n    5  ( 1195,  826)     1013×691       0.311    34.5×        0.032\n    6  (  226,  609)      588×932       0.260    46.6×        0.036\n    7  (  117,  284)      103×790       0.276    39.5×        0.032\n\n  Found 8 candidate regions\n  Applying smart merging (max gap: 80px)…\n    ✓ Merged 2 boxes into 697×1257px\n    ✓ Merged 2 boxes into 776×285px\n    ✓ Merged 3 boxes into 1738×1071px\n  Result: 4 final woodcuts\n    1. ACuriousHieroglyphickBible105_woodcut_00.png — 727×1287px  (area: 403,874)\n    2. ACuriousHieroglyphickBible105_woodcut_01.png — 1043×721px  (area: 579,460)\n    3. ACuriousHieroglyphickBible105_woodcut_02.png — 806×315px  (area: 140,196)\n    4. ACuriousHieroglyphickBible105_woodcut_03.png — 1768×1101px  (area: 1,507,134)\n  [DEBUG] Saved annotated image  (blue=rejected, green=saved)\n\nExtracted 4 woodcuts to extracted/\n\n======================================================================\nCOMPLETE: Extracted 4 woodcuts from 1 pages",
+    "role": "user"
+  },
+  "parentUuid": "5e615ac2-c8c2-49c1-a82b-24fa7df6a3f5",
+  "permissionMode": "acceptEdits",
+  "promptId": "d3120730-0542-496f-8593-533a1d89ded1",
+  "sessionId": "00d045ef-0311-40b7-b34e-71f99f83ffbb",
+  "slug": "synthetic-churning-lecun",
+  "timestamp": "2026-04-12T17:32:49.227Z",
+  "type": "user",
+  "userType": "external",
+  "uuid": "ee9cda42-9f12-41e0-aee7-213833a59e37",
+  "version": "2.1.87"
+}

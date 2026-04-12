@@ -1,0 +1,20 @@
+{
+  "cwd": "/Users/michaelpaulukonis/projects/image-processing",
+  "entrypoint": "cli",
+  "gitBranch": "pano",
+  "isSidechain": false,
+  "message": {
+    "content": "This is great - no captured text! But we did get one section of the decorative border (`00`), and a central illustration (that appears to be made from 3 non-contiguous pieces) should have been joined together (`04` and `05`). That's the trickiest one to get, and almost all previous version kept it together - but at the expense of grabbing more false positives. At one point we had a rubric that defined an image as pieces that fit into a rectangular area - thus the 2 hands are one image. Similarly, these 3 pieces should be one extracted image.\n\n\n    ✗ python extract_woodcuts_v2.py ../samples/ACuriousHieroglyphickBible105.jpg --debug --dilation-kernel 12\n\n======================================================================\nProcessing: ACuriousHieroglyphickBible105.jpg\nImage size: 2350x4063 pixels\n======================================================================\n  Estimated text height: 20px  (min candidate height: 60px)\n  Illustration zones: 3\n    Zone 1: rows 284–577 (293px)\n    Zone 2: rows 599–3432 (2833px)\n    Zone 3: rows 3494–3850 (356px)\n  [DEBUG] Saved threshold, blobs, and zones images\n  Found 507 raw contours\n  Area filter: 47,740–3,341,818 px  (0.5%–35.0%)\n  Found 8 candidate regions\n\n    #       pos (x,y)    size (w×h)   density   h/txt   regularity\n  ---  --------------  ------------  --------  ------  -----------\n    0  (  337, 2739)     1738×671       0.298    33.5×        0.031\n    1  (  348, 2344)     1102×549       0.281    27.4×        0.055\n    2  ( 1292, 2339)      764×491       0.316    24.6×        0.043\n    3  (  957, 1705)      385×275       0.260    13.8×        0.095\n    4  (  566, 1695)      385×279       0.237    13.9×        0.097\n    5  ( 1195,  826)     1013×691       0.311    34.5×        0.032\n    6  (  226,  609)      588×932       0.260    46.6×        0.036\n    7  (  112,  279)      108×795       0.262    39.8×        0.038\n\n  Found 8 candidate regions\n  Applying smart merging (max gap: 80px)…\n    ✓ Merged 2 boxes into 776×285px\n    ✓ Merged 2 boxes into 1708×554px\n  Result: 6 final woodcuts\n    1. ACuriousHieroglyphickBible105_woodcut_00.png — 138×825px  (area: 55,188)\n    2. ACuriousHieroglyphickBible105_woodcut_01.png — 618×962px  (area: 351,288)\n    3. ACuriousHieroglyphickBible105_woodcut_02.png — 1043×721px  (area: 579,460)\n    4. ACuriousHieroglyphickBible105_woodcut_03.png — 806×315px  (area: 140,196)\n    5. ACuriousHieroglyphickBible105_woodcut_04.png — 1738×584px  (area: 660,091)\n    6. ACuriousHieroglyphickBible105_woodcut_05.png — 1768×701px  (area: 847,042)\n  [DEBUG] Saved annotated image  (blue=rejected, green=saved)\n\nExtracted 6 woodcuts to extracted/\n\n======================================================================\nCOMPLETE: Extracted 6 woodcuts from 1 pages\n======================================================================",
+    "role": "user"
+  },
+  "parentUuid": "7ae70699-7eeb-4a97-98ea-a5531c174808",
+  "permissionMode": "acceptEdits",
+  "promptId": "c984f37f-995c-446e-84aa-b7ae649b9589",
+  "sessionId": "00d045ef-0311-40b7-b34e-71f99f83ffbb",
+  "slug": "synthetic-churning-lecun",
+  "timestamp": "2026-04-12T17:25:00.773Z",
+  "type": "user",
+  "userType": "external",
+  "uuid": "43798db7-bfe8-47f1-817a-d3e6badc138f",
+  "version": "2.1.87"
+}

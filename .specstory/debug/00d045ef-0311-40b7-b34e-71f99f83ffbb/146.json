@@ -1,0 +1,20 @@
+{
+  "cwd": "/Users/michaelpaulukonis/projects/image-processing",
+  "entrypoint": "cli",
+  "gitBranch": "pano",
+  "isSidechain": false,
+  "message": {
+    "content": "Now I need either a wrapper script or an option to process an entire directory",
+    "role": "user"
+  },
+  "parentUuid": "bde63315-c10d-4c03-b4e9-7aecfc32769f",
+  "permissionMode": "acceptEdits",
+  "promptId": "152e5249-011e-4a22-9ab7-41a6650cbbc8",
+  "sessionId": "00d045ef-0311-40b7-b34e-71f99f83ffbb",
+  "slug": "synthetic-churning-lecun",
+  "timestamp": "2026-04-12T17:37:26.156Z",
+  "type": "user",
+  "userType": "external",
+  "uuid": "53795fbf-bf2b-49e7-b96d-dc5545e5ad23",
+  "version": "2.1.87"
+}

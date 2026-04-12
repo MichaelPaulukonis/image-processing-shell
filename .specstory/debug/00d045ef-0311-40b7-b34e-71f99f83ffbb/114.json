@@ -1,0 +1,20 @@
+{
+  "agentId": "aside_question-a659bacd9ffcfcaa",
+  "cwd": "/Users/michaelpaulukonis/projects/image-processing",
+  "entrypoint": "cli",
+  "gitBranch": "pano",
+  "isSidechain": true,
+  "message": {
+    "content": "\u003csystem-reminder\u003eThis is a side question from the user. You must answer this question directly in a single response.\n\nIMPORTANT CONTEXT:\n- You are a separate, lightweight agent spawned to answer this one question\n- The main agent is NOT interrupted - it continues working independently in the background\n- You share the conversation context but are a completely separate instance\n- Do NOT reference being interrupted or what you were \"previously doing\" - that framing is incorrect\n\nCRITICAL CONSTRAINTS:\n- You have NO tools available - you cannot read files, run commands, search, or take any actions\n- This is a one-off response - there will be no follow-up turns\n- You can ONLY provide information based on what you already know from the conversation context\n- NEVER say things like \"Let me try...\", \"I'll now...\", \"Let me check...\", or promise to take any action\n- If you don't know the answer, say so - do not offer to look it up or investigate\n\nSimply answer the question with the information you have.\u003c/system-reminder\u003e\n\nI've install claude via npm, if I switch to a homebrew-managed install, do I first need to unsinstall claude? Would I lose my existing setup?",
+    "role": "user"
+  },
+  "parentUuid": "7ae70699-7eeb-4a97-98ea-a5531c174808",
+  "promptId": "ffb5eadb-fa7a-40ae-870d-1b970f729e18",
+  "sessionId": "00d045ef-0311-40b7-b34e-71f99f83ffbb",
+  "slug": "synthetic-churning-lecun",
+  "timestamp": "2026-04-12T17:16:00.154Z",
+  "type": "user",
+  "userType": "external",
+  "uuid": "3b8e4796-2175-485c-b253-0eae024208e0",
+  "version": "2.1.87"
+}
